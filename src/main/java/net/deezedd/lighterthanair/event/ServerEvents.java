@@ -63,7 +63,7 @@ public class ServerEvents {
             stormTickCounter = 0;
             LighterThanAir.LOGGER.info("Storm ended. Re-evaluating wind direction...");
 
-            boolean isLocked = gameRules.getBoolean(ModGameRules.RULE_WINDLOCKED);
+            boolean isLocked = gameRules.getBoolean(ModGameRules.RULE_WINDDIRECTIONLOCK);
             int directionToRestore;
 
             if (isLocked) {
@@ -92,7 +92,7 @@ public class ServerEvents {
         }
 
         // 4. Normální logika (pokud není bouřka a NENÍ zamčeno)
-        if (gameRules.getBoolean(ModGameRules.RULE_WINDLOCKED)) {
+        if (gameRules.getBoolean(ModGameRules.RULE_WINDDIRECTIONLOCK)) {
 
             // --- OPRAVA ZDE (proti spamu) ---
             // Získáme obě hodnoty

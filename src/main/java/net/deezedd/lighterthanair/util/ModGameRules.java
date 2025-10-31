@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 public class ModGameRules {
 
     public static GameRules.Key<GameRules.BooleanValue> RULE_WINDENABLED;
-    public static GameRules.Key<GameRules.BooleanValue> RULE_WINDLOCKED;
+    public static GameRules.Key<GameRules.BooleanValue> RULE_WINDDIRECTIONLOCK;
     public static GameRules.Key<GameRules.IntegerValue> RULE_WINDDIRECTION;
     public static GameRules.Key<GameRules.IntegerValue> RULE_WINDMINDURATIONTICKS;
     public static GameRules.Key<GameRules.IntegerValue> RULE_WINDRANDOMDURATIONTICKS;
@@ -23,7 +23,7 @@ public class ModGameRules {
     public static void register() {
         // Použijeme existující kategorii MISC
         RULE_WINDENABLED = register("windEnabled", GameRules.Category.MISC, GameRules.BooleanValue.create(true, ModGameRules::onWindEnabledChanged));
-        RULE_WINDLOCKED = register("windLocked", GameRules.Category.MISC, GameRules.BooleanValue.create(false)); // Lock nemá listener, řeší se v onServerTick
+        RULE_WINDDIRECTIONLOCK = register("windDirectionLock", GameRules.Category.MISC, GameRules.BooleanValue.create(false)); // Lock nemá listener, řeší se v onServerTick
         RULE_WINDDIRECTION = registerInteger("windDirection", GameRules.Category.MISC, 0, ModGameRules::onWindDirectionChanged);        // --- REGISTRACE NOVÝCH PRAVIDEL ---
         // 10 minut = 10 * 60 * 20 = 12000 ticků
         RULE_WINDMINDURATIONTICKS = registerInteger("windMinDurationTicks", GameRules.Category.MISC, 12000);
@@ -83,7 +83,7 @@ public class ModGameRules {
 
         windData.setDirection(clampedIndex);
 
-        if (!gameRules.getBoolean(ModGameRules.RULE_WINDLOCKED)) {
+        if (!gameRules.getBoolean(ModGameRules.RULE_WINDDIRECTIONLOCK)) {
             int minTicks = gameRules.getInt(ModGameRules.RULE_WINDMINDURATIONTICKS);
             int randTicks = gameRules.getInt(ModGameRules.RULE_WINDRANDOMDURATIONTICKS);
             if (randTicks < 0) randTicks = 0; // Pojistka
