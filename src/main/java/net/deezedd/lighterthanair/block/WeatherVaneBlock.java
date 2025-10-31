@@ -123,12 +123,12 @@ public class WeatherVaneBlock extends BaseEntityBlock {
         int windDirectionIndex = windData.getCurrentDirection(); // Získáme 0-7
 
         // Převedeme index 0-7 na sílu signálu 1-15
-        // 0 (N) -> 1
-        // 1 (NE) -> 3
-        // 2 (E) -> 5
+        // 0 (N) -> 0
+        // 1 (NE) -> 2
+        // 2 (E) -> 4
         // ...
-        // 7 (NW) -> 15
-        int signalStrength = (windDirectionIndex * 2) + 1;
+        // 7 (NW) -> 14
+        int signalStrength = (windDirectionIndex * 2);
 
         return signalStrength;
     }

@@ -63,6 +63,8 @@ public class WeatherVaneBlockEntity extends BlockEntity implements GeoBlockEntit
         if (currentDirection != blockEntity.lastKnownDirection) {
             // ZMĚNA NASTALA!
 
+            level.updateNeighbourForOutputSignal(pos, state.getBlock());
+
             boolean chaoticStorms = gameRules.getBoolean(ModGameRules.RULE_WINDCHAOTICSTORMS);
 
             // 3. Rozhodneme, jestli přehrát zvuk
