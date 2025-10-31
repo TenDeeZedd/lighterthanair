@@ -1,0 +1,32 @@
+{
+  "vane_creak1": {
+    "subtitle": "sound.dzlta.vane_creak1",
+    "sounds": [
+      "dzlta:vane_creak1"
+    ]
+  },
+  "vane_creak2": {
+    "subtitle": "sound.dzlta.vane_creak2",
+    "sounds": [
+      "dzlta:vane_creak2"
+    ]
+  },
+  "vane_creak3": {
+    "subtitle": "sound.dzlta.vane_creak3",
+    "sounds": [
+      "dzlta:vane_creak3"
+    ]
+  },
+  "vane_creak4": {
+    "subtitle": "sound.dzlta.vane_creak4",
+    "sounds": [
+      "dzlta:vane_creak4"
+    ]
+  },
+  "vane_creak5": {
+    "subtitle": "sound.dzlta.vane_creak5",
+    "sounds": [
+      "dzlta:vane_creak5"
+    ]
+  }
+}

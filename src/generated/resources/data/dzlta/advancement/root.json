@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "unlocked": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:iron_ingot"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+    "description": {
+      "translate": "advancements.dzlta.root.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "dzlta:weather_vane"
+    },
+    "show_toast": false,
+    "title": {
+      "translate": "advancements.dzlta.root.title"
+    }
+  },
+  "requirements": [
+    [
+      "unlocked"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

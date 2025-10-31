@@ -1,0 +1,5 @@
+// 1.21.1	2025-10-30T22:36:59.5877618	Block States: dzlta
+3ecc7b0385c33d089e754ef093cf881b957c2470 assets/dzlta/blockstates/weather_vane.json
+1acff5950eb2b9bc26bbded1bcae30061d60f0ab assets/dzlta/blockstates/wind_compass.json
+254c46d7ebaf32c46423a17434a14bcd3d03ada7 assets/dzlta/models/block/weather_vane_particle.json
+91928117e15c81d3af36df57dea97956d64d1d5f assets/dzlta/models/block/wind_compass_particle.json

@@ -1,0 +1,38 @@
+{
+  "dzlta.configuration.title": "Lighter Than Air Configs",
+  "dzlta.configuration.section.dzlta.common.toml": "Lighter Than Air Configs",
+  "dzlta.configuration.section.dzlta.common.toml.title": "Lighter Than Air Configs",
+  "dzlta.configuration.items": "Item List",
+  "dzlta.configuration.logDirtBlock": "Log Dirt Block",
+  "dzlta.configuration.magicNumberIntroduction": "Magic Number Text",
+  "dzlta.configuration.magicNumber": "Magic Number",
+
+
+
+  "itemGroup.dzlta.lta_tab": "Lighter Than Air",
+
+
+
+  "item.dzlta.weather_vane": "Weather Vane",
+  "item.dzlta.wind_compass": "Wind Compass",
+
+
+
+  "block.dzlta.weather_vane": "Weather Vane",
+  "block.dzlta.wind_compass": "Wind Compass",
+
+
+  "sound.dzlta.vane_creak1": "Weather Vane Creaking",
+  "sound.dzlta.vane_creak2": "Weather Vane Creaking",
+  "sound.dzlta.vane_creak3": "Weather Vane Creaking",
+  "sound.dzlta.vane_creak4": "Weather Vane Creaking",
+  "sound.dzlta.vane_creak5": "Weather Vane Creaking",
+
+
+
+  "advancements.dzlta.root.title": "Lighter Than Air",
+  "advancements.dzlta.root.description": "Exploring the skies",
+
+  "advancements.dzlta.get_weather_vane.title": "Which Way Does the Wind Blow?",
+  "advancements.dzlta.get_weather_vane.description": "Craft a Weather Vane to read the wind's direction"
+}

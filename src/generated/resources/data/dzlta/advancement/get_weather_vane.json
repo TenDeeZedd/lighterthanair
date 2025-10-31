@@ -1,0 +1,33 @@
+{
+  "parent": "dzlta:root",
+  "criteria": {
+    "has_weather_vane": {
+      "conditions": {
+        "items": [
+          {
+            "items": "dzlta:weather_vane"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.dzlta.get_weather_vane.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "dzlta:weather_vane"
+    },
+    "title": {
+      "translate": "advancements.dzlta.get_weather_vane.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_weather_vane"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

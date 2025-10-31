@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "floating=false": {
+      "model": "dzlta:block/wind_compass_particle"
+    },
+    "floating=true": {
+      "model": "dzlta:block/wind_compass_particle"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "dzlta:block/weather_vane_particle"
+    }
+  }
+}
