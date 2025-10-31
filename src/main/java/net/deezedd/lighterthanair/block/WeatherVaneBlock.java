@@ -105,6 +105,11 @@ public class WeatherVaneBlock extends BaseEntityBlock {
     }
 
     @Override
+    public boolean hasAnalogOutputSignal(BlockState pState) {
+        return true;
+    }
+
+    @Override
     public int getAnalogOutputSignal(BlockState pState, Level pLevel, BlockPos pPos) {
         // Redstone logika běží jen na serveru
         if (pLevel.isClientSide() || !(pLevel instanceof ServerLevel serverLevel)) {
