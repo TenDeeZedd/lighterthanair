@@ -44,8 +44,8 @@ public class LighterThanAir {
         ModBlockEntities.register(modEventBus);
         ModSounds.register(modEventBus);
         ModRecipes.register(modEventBus);
-        modEventBus.addListener(DataGenerators::gatherData);
         ModMessages.register(modEventBus);
+        modEventBus.addListener(DataGenerators::gatherData);
         ModGameRules.register();
 
 

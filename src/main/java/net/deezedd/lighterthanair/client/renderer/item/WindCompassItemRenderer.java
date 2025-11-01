@@ -43,7 +43,7 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
         ItemDisplayContext displayContext = animationState.getData(DataTickets.ITEM_RENDER_PERSPECTIVE);
 
         // Získáme směr větru (0-7)
-        int windDirectionIndex = ClientWindData.getWindDirection();
+        int windDirectionIndex = ClientWindData.getCurrentDirection();
 
         // --- ROZDĚLENÍ LOGIKY PODLE KONTEXTU ---
 

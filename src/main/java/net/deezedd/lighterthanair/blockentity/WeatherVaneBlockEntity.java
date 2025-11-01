@@ -65,7 +65,7 @@ public class WeatherVaneBlockEntity extends BlockEntity implements GeoBlockEntit
 
             level.updateNeighbourForOutputSignal(pos, state.getBlock());
 
-            boolean chaoticStorms = gameRules.getBoolean(ModGameRules.RULE_WINDCHAOTICSTORMS);
+            boolean chaoticStorms = gameRules.getBoolean(ModGameRules.RULE_WINDDIRECTIONCHAOTICSTORMS);
 
             // 3. Rozhodneme, jestli přehrát zvuk
             if (chaoticStorms && serverLevel.isThundering()) {

@@ -7,127 +7,194 @@ import net.deezedd.lighterthanair.world.WindDirectionSavedData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
 
 import java.util.function.BiConsumer;
 
 public class ModGameRules {
 
-    public static GameRules.Key<GameRules.BooleanValue> RULE_WINDENABLED;
-    public static GameRules.Key<GameRules.BooleanValue> RULE_WINDDIRECTIONLOCK;
-    public static GameRules.Key<GameRules.IntegerValue> RULE_WINDDIRECTION;
-    public static GameRules.Key<GameRules.IntegerValue> RULE_WINDMINDURATIONTICKS;
-    public static GameRules.Key<GameRules.IntegerValue> RULE_WINDRANDOMDURATIONTICKS;
-    public static GameRules.Key<GameRules.BooleanValue> RULE_WINDCHAOTICSTORMS;
+    // ... (všechna gamerules zůstávají stejná)
 
-    // --- Metoda pro registraci ---
-    public static void register() {
-        // Použijeme existující kategorii MISC
-        RULE_WINDENABLED = register("windEnabled", GameRules.Category.MISC, GameRules.BooleanValue.create(true, ModGameRules::onWindEnabledChanged));
-        RULE_WINDDIRECTIONLOCK = register("windDirectionLock", GameRules.Category.MISC, GameRules.BooleanValue.create(false)); // Lock nemá listener, řeší se v onServerTick
-        RULE_WINDDIRECTION = registerInteger("windDirection", GameRules.Category.MISC, 0, ModGameRules::onWindDirectionChanged);        // --- REGISTRACE NOVÝCH PRAVIDEL ---
-        // 10 minut = 10 * 60 * 20 = 12000 ticků
-        RULE_WINDMINDURATIONTICKS = registerInteger("windMinDurationTicks", GameRules.Category.MISC, 12000);
-        // 15 minut = 15 * 60 * 20 = 18000 ticků
-        RULE_WINDRANDOMDURATIONTICKS = registerInteger("windRandomDurationTicks", GameRules.Category.MISC, 18000);
+    // --- Pravidla pro Směr Větru ---
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_WINDENABLED =
+            GameRules.register("windEnabled", GameRules.Category.MISC, GameRules.BooleanValue.create(true,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Enabled set to: " + value.get()); // Logger L1
+                        if (value.get()) { // P3 a P7
+                            triggerDirectionUpdate(server, true); // Při zapnutí ihned změní směr
+                        }
+                    }));
 
-        RULE_WINDCHAOTICSTORMS = registerBoolean("windChaoticStorms", GameRules.Category.MISC, true);
-    }
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_WINDLOCKDIRECTION =
+            GameRules.register("windLockDirection", GameRules.Category.MISC, GameRules.BooleanValue.create(false,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Direction Lock set to: " + value.get()); // Logger L3
+                        if (!value.get()) { // P3
+                            triggerDirectionUpdate(server, false); // Při odemčení resetuje časovač
+                        }
+                    }));
 
-    // Tuto metodu zavoláme z hlavní třídy modu pro spuštění registrace
-    public static void init() {
-        // Dummy call to ensure class loads and registers
-    }
+    // P1: Přidáno pravidlo pro manuální nastavení směru
+    public static final GameRules.Key<GameRules.IntegerValue> RULE_WINDSETDIRECTION =
+            GameRules.register("windSetDirection", GameRules.Category.MISC, GameRules.IntegerValue.create(0,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Direction manually set to: " + value.get() + " (Will apply if lock is enabled)"); // Logger L2
+                    }));
 
-    private static void onWindEnabledChanged(MinecraftServer server, GameRules.BooleanValue rule) {
-        boolean enabled = rule.get();
-        GameRules gameRules = server.getGameRules();
-        GameRules.IntegerValue directionRule = gameRules.getRule(RULE_WINDDIRECTION); // Použijeme opravený název
-        int directionIndex = 0; // Výchozí pro vypnutý stav
+    public static final GameRules.Key<GameRules.IntegerValue> RULE_WINDDIRECTIONBASEINTERVAL =
+            GameRules.register("windDirectionBaseInterval", GameRules.Category.MISC, GameRules.IntegerValue.create(300,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Direction Base Interval set to: " + value.get() + "s");
+                        triggerDirectionUpdate(server, false); // P8: Reset časovače
+                    }));
 
-        if (!enabled) {
-            LighterThanAir.LOGGER.info("Wind disabled. Setting client direction to 0 (North).");
-            // Pošleme 0, ale neměníme gamerule
-            WindDirectionSyncS2CPacket packet = new WindDirectionSyncS2CPacket(0);
-            ModMessages.sendToAllClients(packet);
-        } else {
-            // Při zapnutí pošleme aktuálně nastavený směr
-            directionIndex = directionRule.get();
-            LighterThanAir.LOGGER.info("Wind enabled. Sending current direction: {}", directionIndex);
-            WindDirectionSyncS2CPacket packet = new WindDirectionSyncS2CPacket(directionIndex);
-            ModMessages.sendToAllClients(packet);
-        }
-    }
+    public static final GameRules.Key<GameRules.IntegerValue> RULE_WINDDIRECTIONRANDOMINTERVAL =
+            GameRules.register("windDirectionRandomInterval", GameRules.Category.MISC, GameRules.IntegerValue.create(300,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Direction Random Interval set to: " + value.get() + "s");
+                        triggerDirectionUpdate(server, false); // P8: Reset časovače
+                    }));
 
-    private static void onWindDirectionChanged(MinecraftServer server, GameRules.IntegerValue rule) {
-        if (server == null || server.overworld() == null) return;
+    // P5: Přejmenováno
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_WINDDIRECTIONCHAOTICSTORMS =
+            GameRules.register("windDirectionChaoticStorms", GameRules.Category.MISC, GameRules.BooleanValue.create(true,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Direction Chaotic Storms set to: " + value.get()); // Logger L5
+                    }));
 
-        int newIndex = rule.get();
-        int clampedIndex = newIndex;
-        GameRules gameRules = server.getGameRules();
 
-        if (newIndex < 0 || newIndex > 7) {
-            clampedIndex = 0;
-            LighterThanAir.LOGGER.warn("Invalid windDirection '{}' set. Clamping to 0 (North).", newIndex);
-            rule.set(clampedIndex, server); // Spustí tento listener znovu
+    // --- Pravidla pro Sílu Větru ---
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_WINDSTRENGTHEABLED =
+            GameRules.register("windStrengthEnabled", GameRules.Category.MISC, GameRules.BooleanValue.create(true,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Strength Enabled set to: " + value.get()); // Logger L1
+                        if (value.get()) { // P3 a P7
+                            triggerStrengthUpdate(server, true); // Při zapnutí ihned změní sílu
+                        }
+                    }));
+
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_WINDLOCKSTRENGTH =
+            GameRules.register("windLockStrength", GameRules.Category.MISC, GameRules.BooleanValue.create(false,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Strength Lock set to: " + value.get()); // Logger L3
+                        if (!value.get()) { // P3
+                            triggerStrengthUpdate(server, false); // Při odemčení resetuje časovač
+                        }
+                    }));
+
+    // P2: Změněn default z -1 na 0
+    public static final GameRules.Key<GameRules.IntegerValue> RULE_WINDSETSTRENGTH =
+            GameRules.register("windSetStrength", GameRules.Category.MISC, GameRules.IntegerValue.create(0,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Strength manually set to: " + value.get() + " (Will apply if lock is enabled)"); // Logger L2
+                    }));
+
+    public static final GameRules.Key<GameRules.IntegerValue> RULE_WINDSTRENGTHBASEINTERVAL =
+            GameRules.register("windStrengthBaseInterval", GameRules.Category.MISC, GameRules.IntegerValue.create(300,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Strength Base Interval set to: " + value.get() + "s");
+                        triggerStrengthUpdate(server, false); // P8: Reset časovače
+                    }));
+
+    public static final GameRules.Key<GameRules.IntegerValue> RULE_WINDSTRRANDOMINTERVAL =
+            GameRules.register("windStrengthRandomInterval", GameRules.Category.MISC, GameRules.IntegerValue.create(300,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Strength Random Interval set to: " + value.get() + "s");
+                        triggerStrengthUpdate(server, false); // P8: Reset časovače
+                    }));
+
+    // P5: Přidáno
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_WINDSTRENGTHCHAOTICSTORMS =
+            GameRules.register("windStrengthChaoticStorms", GameRules.Category.MISC, GameRules.BooleanValue.create(true,
+                    (server, value) -> {
+                        LighterThanAir.LOGGER.info("Wind Strength Chaotic Storms set to: " + value.get()); // Logger L5
+                    }));
+
+
+    // --- Pomocné metody pro resetování časovačů (P3, P7, P8) ---
+
+    public static void triggerDirectionUpdate(MinecraftServer server, boolean forceNewValue) {
+        ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+        if (overworld == null) return;
+
+        WindDirectionSavedData windData = WindDirectionSavedData.get(overworld);
+        GameRules gameRules = overworld.getGameRules();
+
+        // Zámek a master-disable mají přednost
+        if (!gameRules.getBoolean(RULE_WINDENABLED) || gameRules.getBoolean(RULE_WINDLOCKDIRECTION)) {
             return;
         }
 
-        LighterThanAir.LOGGER.info("Wind direction changed via gamerule to: {}", newIndex);
-
-        // Okamžitě pošleme update klientům
-        WindDirectionSyncS2CPacket packet = new WindDirectionSyncS2CPacket(newIndex);
-        ModMessages.sendToAllClients(packet);
-
-        WindDirectionSavedData windData = WindDirectionSavedData.get(server.overworld());
-        ServerLevel overworld = server.overworld();
-
-        windData.setDirection(clampedIndex);
-
-        if (!gameRules.getBoolean(ModGameRules.RULE_WINDDIRECTIONLOCK)) {
-            int minTicks = gameRules.getInt(ModGameRules.RULE_WINDMINDURATIONTICKS);
-            int randTicks = gameRules.getInt(ModGameRules.RULE_WINDRANDOMDURATIONTICKS);
-            if (randTicks < 0) randTicks = 0; // Pojistka
-
-            int duration = minTicks + overworld.random.nextInt(randTicks + 1);
-            windData.setNextChangeTick(overworld.getGameTime() + duration);
-            LighterThanAir.LOGGER.info("Manual direction set. Restarting dynamic timer. Next change in {} ticks", duration);
+        if (forceNewValue) {
+            windData.setRandomDirectionInternal(overworld.random);
         }
 
-        // Musíme také aktualizovat WindDirectionSavedData, aby bouřka věděla, kam se vrátit
-        if (server != null && server.overworld() != null) {
-            WindDirectionSavedData.get(server.overworld()).setDirection(newIndex);
+        // ===== OPRAVA ZDE: Logika pro výpočet doby trvání je nyní centralizovaná zde =====
+        boolean chaoticStorms = gameRules.getBoolean(RULE_WINDDIRECTIONCHAOTICSTORMS);
+        boolean isThundering = overworld.isThundering();
+        int duration;
+
+        if (chaoticStorms && isThundering) {
+            // Speciální interval pro bouřky (1-5 sekund)
+            duration = (1 + overworld.random.nextInt(5)) * 20;
+            LighterThanAir.LOGGER.info("Chaotic Storm Direction tick!");
+        } else {
+            // Standardní interval
+            int baseInterval = gameRules.getInt(RULE_WINDDIRECTIONBASEINTERVAL) * 20;
+            int randomInterval = gameRules.getInt(RULE_WINDDIRECTIONRANDOMINTERVAL) * 20;
+            duration = baseInterval + overworld.random.nextInt(randomInterval + 1);
+            LighterThanAir.LOGGER.info("Dynamic Wind Direction tick!");
         }
+        // ==============================================================================
+
+        windData.setNextChangeTick(overworld.getGameTime() + duration);
+        LighterThanAir.LOGGER.info("New Wind Direction timer set. Current Direction: " + windData.getCurrentDirection() + ". Next change in " + (duration / 20) + " seconds.");
     }
 
-    private static <T extends GameRules.Value<T>> GameRules.Key<T> register(String name, GameRules.Category category, GameRules.Type<T> type) {
-        return GameRules.register(name, category, type);
+    public static void triggerStrengthUpdate(MinecraftServer server, boolean forceNewValue) {
+        ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+        if (overworld == null) return;
+
+        WindDirectionSavedData windData = WindDirectionSavedData.get(overworld);
+        GameRules gameRules = overworld.getGameRules();
+
+        // Zámek a master-disable mají přednost
+        if (!gameRules.getBoolean(RULE_WINDSTRENGTHEABLED) || gameRules.getBoolean(RULE_WINDLOCKSTRENGTH)) {
+            return;
+        }
+
+        // ===== OPRAVA ZDE: Logika pro výpočet doby trvání A HODNOTY je nyní centralizovaná zde =====
+        boolean chaoticStorms = gameRules.getBoolean(RULE_WINDSTRENGTHCHAOTICSTORMS);
+        boolean isThundering = overworld.isThundering();
+        int duration;
+
+        if (forceNewValue) {
+            if (chaoticStorms && isThundering) {
+                windData.setStrength(4); // Vynutíme sílu 4
+            } else {
+                windData.setRandomStrengthInternal(overworld); // Vypočítá sílu podle počasí
+            }
+        }
+        // else: ponechá stávající hodnotu (jen resetuje časovač)
+
+        if (chaoticStorms && isThundering) {
+            // Speciální interval pro bouřky (1-5 sekund)
+            duration = (1 + overworld.random.nextInt(5)) * 20;
+            LighterThanAir.LOGGER.info("Chaotic Storm Strength tick!");
+        } else {
+            // Standardní interval
+            int baseInterval = gameRules.getInt(RULE_WINDSTRENGTHBASEINTERVAL) * 20;
+            int randomInterval = gameRules.getInt(RULE_WINDSTRRANDOMINTERVAL) * 20;
+            duration = baseInterval + overworld.random.nextInt(randomInterval + 1);
+            LighterThanAir.LOGGER.info("Dynamic Wind Strength tick!");
+        }
+        // =======================================================================================
+
+        windData.setNextStrengthChangeTick(overworld.getGameTime() + duration);
+        LighterThanAir.LOGGER.info("New Wind Strength timer set. Current Strength: " + windData.getCurrentStrength() + ". Next change in " + (duration / 20) + " seconds.");
     }
 
-    private static GameRules.Type<GameRules.BooleanValue> createBoolean(boolean defaultValue, BiConsumer<MinecraftServer, GameRules.BooleanValue> listener) {
-        return GameRules.BooleanValue.create(defaultValue, listener);
+    public static void register() {
+        // Tato metoda je volána v LighterThanAir.java, aby se pravidla načetla
     }
-
-    private static GameRules.Key<GameRules.BooleanValue> registerBoolean(String name, GameRules.Category category, boolean defaultValue, BiConsumer<MinecraftServer, GameRules.BooleanValue> listener) {
-        return register(name, category, createBoolean(defaultValue, listener));
-    }
-
-    private static GameRules.Key<GameRules.BooleanValue> registerBoolean(String name, GameRules.Category category, boolean defaultValue) {
-        return register(name, category, GameRules.BooleanValue.create(defaultValue));
-    }
-
-    // Pro Integer s listenerem
-    private static GameRules.Type<GameRules.IntegerValue> createInteger(int defaultValue, BiConsumer<MinecraftServer, GameRules.IntegerValue> listener) {
-        return GameRules.IntegerValue.create(defaultValue, listener);
-    }
-
-    // Nová pomocná metoda pro registraci Integer s listenerem
-    private static GameRules.Key<GameRules.IntegerValue> registerInteger(String name, GameRules.Category category, int defaultValue, BiConsumer<MinecraftServer, GameRules.IntegerValue> listener) {
-        return register(name, category, createInteger(defaultValue, listener));
-    }
-
-    // Pro Min/Max Ticks (bez listeneru)
-    private static GameRules.Key<GameRules.IntegerValue> registerInteger(String name, GameRules.Category category, int defaultValue) {
-        return register(name, category, GameRules.IntegerValue.create(defaultValue));
-    }
-
 }

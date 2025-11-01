@@ -5,150 +5,141 @@ import net.deezedd.lighterthanair.network.ModMessages;
 import net.deezedd.lighterthanair.network.packet.WindDirectionSyncS2CPacket;
 import net.deezedd.lighterthanair.util.ModGameRules;
 import net.deezedd.lighterthanair.world.WindDirectionSavedData;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
+import java.util.Random;
+
 @EventBusSubscriber(modid = LighterThanAir.MODID)
 public class ServerEvents {
 
-    private static int stormTickCounter = 0;
-    private static boolean wasStormingLastTick = false;
-    private static int preStormDirection = 0;
+    private static boolean wasThundering = false;
+    private static boolean wasRaining = false;
+    private static long weatherChangeScheduledTick = 0;
+    private static final int WEATHER_CHANGE_DELAY_TICKS = 40; // 2 sekundy zpoždění
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
-        ServerLevel overworld = event.getServer().overworld();
-        if (overworld == null) return;
-        GameRules gameRules = overworld.getGameRules();
+        if (event.getServer().getTickCount() % 20 == 0) { // Každou sekundu
+            ServerLevel overworld = event.getServer().getLevel(Level.OVERWORLD);
+            if (overworld == null) return;
 
-        // 1. Globální kontrola - pokud je vítr vypnutý, neděláme nic
-        if (!gameRules.getBoolean(ModGameRules.RULE_WINDENABLED)) {
-            if (wasStormingLastTick) wasStormingLastTick = false; // Reset bouřky
-            return;
-        }
+            MinecraftServer server = overworld.getServer(); // Získáme server
+            GameRules gameRules = overworld.getGameRules();
+            WindDirectionSavedData windData = WindDirectionSavedData.get(overworld);
 
-        WindDirectionSavedData windData = WindDirectionSavedData.get(overworld);
-        long currentTime = overworld.getGameTime();
+            long gameTime = overworld.getGameTime();
+            boolean isThundering = overworld.isThundering();
+            boolean isRaining = overworld.isRaining();
 
-        // 2. Kontrola bouřky (má nejvyšší prioritu)
-        boolean chaoticStorms = gameRules.getBoolean(ModGameRules.RULE_WINDCHAOTICSTORMS);
-        if (chaoticStorms && overworld.isThundering()) {
-            // Bouřka právě začala?
-            if (!wasStormingLastTick) {
-                wasStormingLastTick = true;
-                // Uložíme si aktuální směr (ať už byl zamčený nebo dynamický)
-                preStormDirection = windData.getCurrentDirection();
-                LighterThanAir.LOGGER.info("Chaotic storm started! Saving pre-storm direction: {}", preStormDirection);
+            // 1. Master kontrola
+            if (!gameRules.getBoolean(ModGameRules.RULE_WINDENABLED)) {
+                windData.setDirection(0);
+                windData.setStrength(0);
+                syncWindToAllPlayers(overworld, windData.getCurrentDirection(), windData.getCurrentStrength());
+                wasThundering = false;
+                wasRaining = false;
+                weatherChangeScheduledTick = 0;
+                return;
             }
 
-            stormTickCounter++;
-            if (stormTickCounter >= 100) { // Každých 5 sekund
-                stormTickCounter = 0;
-                int newDirection = overworld.random.nextInt(8); // 0-7
-                windData.setDirection(newDirection);
-                ModMessages.sendToAllClients(new WindDirectionSyncS2CPacket(newDirection));
-                LighterThanAir.LOGGER.info("Chaotic Storm! Wind changed to index: {}", newDirection);
-            }
-            return; // Přeskočíme normální logiku
-        }
+            // 2. Logika zpožděné reakce na počasí
+            boolean weatherChanged = (isThundering != wasThundering || isRaining != wasRaining);
 
-        // 3. Logika po bouřce (přechod)
-        if (wasStormingLastTick && !(chaoticStorms && overworld.isThundering())) {
-            wasStormingLastTick = false;
-            stormTickCounter = 0;
-            LighterThanAir.LOGGER.info("Storm ended. Re-evaluating wind direction...");
-
-            boolean isLocked = gameRules.getBoolean(ModGameRules.RULE_WINDDIRECTIONLOCK);
-            int directionToRestore;
-
-            if (isLocked) {
-                // Případ 1: Hráč má zamčený směr -> vrátíme směr před bouřkou
-                directionToRestore = preStormDirection;
-                LighterThanAir.LOGGER.info("Reverting to locked direction: {}", directionToRestore);
-            } else {
-                // --- SPRÁVNÝ VÝPOČET A NASTAVENÍ ČASOVAČE ---
-                directionToRestore = windData.getCurrentDirection();
-                int minTicks = gameRules.getInt(ModGameRules.RULE_WINDMINDURATIONTICKS);
-                int randTicks = gameRules.getInt(ModGameRules.RULE_WINDRANDOMDURATIONTICKS); // Používáme přejmenované pravidlo
-                if (randTicks < 0) randTicks = 0;
-
-                int duration = minTicks + overworld.random.nextInt(randTicks + 1);
-
-                // Nastavíme POUZE časovač, směr neměníme
-                windData.setNextChangeTick(currentTime + duration);
-
-                LighterThanAir.LOGGER.info("Storm ended (dynamic). Keeping dir {}. Next change in {} ticks (min={}, rand={})",
-                        directionToRestore, duration, minTicks, randTicks);
-                // --- KONEC OPRAVY ---
+            if (weatherChanged) {
+                LighterThanAir.LOGGER.info("Weather state changed (T:" + isThundering + ", R:" + isRaining + "). Scheduling wind update.");
+                weatherChangeScheduledTick = gameTime + WEATHER_CHANGE_DELAY_TICKS;
             }
 
-            windData.setDirection(directionToRestore); // Obnovíme směr
-            ModMessages.sendToAllClients(new WindDirectionSyncS2CPacket(directionToRestore)); // Pošleme update
-        }
-
-        // 4. Normální logika (pokud není bouřka a NENÍ zamčeno)
-        if (gameRules.getBoolean(ModGameRules.RULE_WINDDIRECTIONLOCK)) {
-
-            // --- OPRAVA ZDE (proti spamu) ---
-            // Získáme obě hodnoty
-            int savedDataDir = windData.getCurrentDirection();
-            GameRules.IntegerValue rule = gameRules.getRule(ModGameRules.RULE_WINDDIRECTION);
-
-            // Synchronizujeme gamerule, POUZE pokud se liší
-            if (rule.get() != savedDataDir) {
-                LighterThanAir.LOGGER.info("Syncing windLocked gamerule to saved data: {}", savedDataDir);
-                rule.set(savedDataDir, event.getServer()); // Toto spustí listener v ModGameRules
+            if (weatherChangeScheduledTick > 0 && gameTime >= weatherChangeScheduledTick) {
+                if (!weatherChanged) {
+                    LighterThanAir.LOGGER.info("Executing scheduled weather update for stable weather (T:" + isThundering + ", R:" + isRaining + ").");
+                    // ===== OPRAVA ZDE: Voláme centralizované metody =====
+                    ModGameRules.triggerDirectionUpdate(server, true); // Vynutí nový směr a nový časovač
+                    ModGameRules.triggerStrengthUpdate(server, true); // Vynutí novou sílu a nový časovač
+                    // ==================================================
+                    weatherChangeScheduledTick = 0;
+                }
             }
-            // --- KONEC OPRAVY ---
 
-            windData.setNextChangeTick(currentTime + 100);
-            return;
-        }
+            // 3. Zpracování logiky SÍLY větru
+            handleWindStrength(overworld, gameRules, windData, gameTime, server);
 
-        // 5. Dynamická změna (pokud není bouřka, není zamčeno)
-        if (currentTime >= windData.getNextChangeTick()) {
-            int minTicks = gameRules.getInt(ModGameRules.RULE_WINDMINDURATIONTICKS);
-            int randTicks = gameRules.getInt(ModGameRules.RULE_WINDRANDOMDURATIONTICKS); // Používáme přejmenované pravidlo
-            if (randTicks < 0) randTicks = 0; // Pojistka
+            // 4. Zpracování logiky SMĚRU větru
+            handleWindDirection(overworld, gameRules, windData, gameTime, server);
 
-            // Přidáme logování pro kontrolu hodnot
-            LighterThanAir.LOGGER.debug("Calculating next wind change: minTicks={}, randTicks={}", minTicks, randTicks);
+            // 5. Synchronizace
+            syncWindToAllPlayers(overworld, windData.getCurrentDirection(), windData.getCurrentStrength());
 
-            int duration = minTicks + overworld.random.nextInt(randTicks + 1);
-
-            // --- SPRÁVNÉ VOLÁNÍ METODY ---
-            // Voláme metodu jen se 2 argumenty (level a finální duration)
-            windData.setRandomDirectionAndPlanNext(overworld, duration);
-            // --- KONEC OPRAVY ---
-
-            int newDirection = windData.getCurrentDirection();
-
-            // ... (zbytek kódu, set gamerule, log, odeslání packetu) ...
-            gameRules.getRule(ModGameRules.RULE_WINDDIRECTION).set(newDirection, event.getServer());
-            LighterThanAir.LOGGER.info("Wind direction randomized to: {} (Next change in {} ticks)", newDirection, duration); // Logujeme duration
-            ModMessages.sendToAllClients(new WindDirectionSyncS2CPacket(newDirection));
+            // 6. Uložení stavu počasí
+            wasThundering = isThundering;
+            wasRaining = isRaining;
         }
     }
 
-    @SubscribeEvent
-    public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            GameRules gameRules = player.serverLevel().getGameRules();
-            int directionIndex = 0; // Výchozí pro vypnutý stav
+    // Upraveno pro přijetí MinecraftServer
+    private static void handleWindStrength(ServerLevel overworld, GameRules gameRules, WindDirectionSavedData windData,
+                                           long gameTime, MinecraftServer server) {
 
-            if (gameRules.getBoolean(ModGameRules.RULE_WINDENABLED)) {
-                // Vždy pošleme aktuální, reálný směr větru uložený na serveru
-                directionIndex = WindDirectionSavedData.get(player.serverLevel()).getCurrentDirection();
-            }
+        // A. Zámek má nejvyšší prioritu
+        if (gameRules.getBoolean(ModGameRules.RULE_WINDLOCKSTRENGTH)) {
+            windData.setStrength(gameRules.getInt(ModGameRules.RULE_WINDSETSTRENGTH));
+            return;
+        }
 
-            WindDirectionSyncS2CPacket packet = new WindDirectionSyncS2CPacket(directionIndex);
-            ModMessages.sendToPlayer(player, packet);
-            LighterThanAir.LOGGER.info("Sent initial wind direction {} (Enabled: {}) to player {}", directionIndex, gameRules.getBoolean(ModGameRules.RULE_WINDENABLED), player.getName().getString());
+        // B. Kontrola povolení
+        if (!gameRules.getBoolean(ModGameRules.RULE_WINDSTRENGTHEABLED)) {
+            windData.setStrength(0);
+            return;
+        }
+
+        // C. Dynamická změna / Chaotická bouřka
+        // Nyní se staráme jen o to, KDYŽ časovač vyprší.
+        if (gameTime < windData.getNextStrengthChangeTick()) {
+            return; // Ještě není čas
+        }
+
+        // D. Čas na změnu!
+        // ===== OPRAVA ZDE: Voláme centralizovanou metodu =====
+        ModGameRules.triggerStrengthUpdate(server, true);
+        // ==================================================
+    }
+
+    // Upraveno pro přijetí MinecraftServer
+    private static void handleWindDirection(ServerLevel overworld, GameRules gameRules, WindDirectionSavedData windData,
+                                            long gameTime, MinecraftServer server) {
+
+        // A. Zámek má nejvyšší prioritu
+        if (gameRules.getBoolean(ModGameRules.RULE_WINDLOCKDIRECTION)) {
+            windData.setDirection(gameRules.getInt(ModGameRules.RULE_WINDSETDIRECTION));
+            return;
+        }
+
+        // B. Dynamická změna / Chaotická bouřka
+        // Nyní se staráme jen o to, KDYŽ časovač vyprší.
+        if (gameTime < windData.getNextChangeTick()) {
+            return; // Ještě není čas
+        }
+
+        // D. Čas na změnu!
+        // ===== OPRAVA ZDE: Voláme centralizovanou metodu =====
+        ModGameRules.triggerDirectionUpdate(server, true);
+        // ==================================================
+    }
+
+
+    private static void syncWindToAllPlayers(ServerLevel level, int direction, int strength) {
+        WindDirectionSyncS2CPacket packet = new WindDirectionSyncS2CPacket(direction, strength);
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+            ModMessages.sendToPlayer(packet, player);
         }
     }
 }

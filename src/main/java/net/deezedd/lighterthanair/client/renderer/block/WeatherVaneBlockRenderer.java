@@ -52,7 +52,7 @@ public class WeatherVaneBlockRenderer extends GeoBlockRenderer<WeatherVaneBlockE
 
         if (bone.getName().equals("vane_rotate")) {
             // --- Cíl rotace (ČTEME Z KLIENTSKÝCH DAT) ---
-            int windDirectionIndex = ClientWindData.getWindDirection(); // Získáme 0-7
+            int windDirectionIndex = ClientWindData.getCurrentDirection(); // Získáme 0-7
             float targetYaw = switch (windDirectionIndex) { // Převod na úhel
                 case 0 -> 0.0f; // N
                 case 1 -> -45.0f; // NE

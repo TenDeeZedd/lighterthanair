@@ -92,7 +92,7 @@ public class WindCompassBlockRenderer extends GeoBlockRenderer<WindCompassBlockE
         // Animace "arrow" - podle větru
         if (bone.getName().equals("arrow")) {
             // Zkopírovaná logika z WeatherVaneRenderer
-            int windDirectionIndex = ClientWindData.getWindDirection();
+            int windDirectionIndex = ClientWindData.getCurrentDirection();
             float targetYaw = switch (windDirectionIndex) {
                 case 0 -> 0.0f;   // N
                 case 1 -> 315.0f;  // NE

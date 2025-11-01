@@ -9,40 +9,48 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record WindDirectionSyncS2CPacket(int windDirection) implements CustomPacketPayload {
-    // PayloadType zůstává stejný
-    public static final Type<WindDirectionSyncS2CPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(LighterThanAir.MODID, "wind_direction_sync"));
+public record WindDirectionSyncS2CPacket(int direction, int strength) implements CustomPacketPayload {
 
-    // Definujeme StreamCodec podle moderního způsobu
-    // Používá RegistryFriendlyByteBuf pro PLAY fázi
-    public static final StreamCodec<RegistryFriendlyByteBuf, WindDirectionSyncS2CPacket> STREAM_CODEC = StreamCodec.of(
-            // ZMĚNA ZDE: Použijeme lambda výraz, který zavolá naši instanční metodu write
-            (buffer, packet) -> packet.write(buffer),
-            // Čtení pomocí konstruktoru zůstává stejné
-            WindDirectionSyncS2CPacket::new);
+    // --- OPRAVA ZDE ---
+    // Použijeme ResourceLocation.fromNamespaceAndPath() místo new ResourceLocation()
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(LighterThanAir.MODID, "wind_direction_sync");
+    // ------------------
 
-    // Konstruktor pro čtení z bufferu (musí brát RegistryFriendlyByteBuf)
-    public WindDirectionSyncS2CPacket(final RegistryFriendlyByteBuf buffer) {
-        this(buffer.readByte());
+    // 2. Definice TYPU packetu
+    public static final CustomPacketPayload.Type<WindDirectionSyncS2CPacket> TYPE = new CustomPacketPayload.Type<>(ID);
+
+    // 3. Definuje, jak se packet čte a zapisuje
+    public static final StreamCodec<FriendlyByteBuf, WindDirectionSyncS2CPacket> STREAM_CODEC = StreamCodec.of(
+            // --- OPRAVA ZDE ---
+            // Použijeme lambdu, abychom zajistili správné pořadí (Buf, Packet)
+            (buf, packet) -> packet.write(buf), // Metoda pro zápis
+            // ------------------
+            WindDirectionSyncS2CPacket::new    // Metoda pro čtení (konstruktor z FriendlyByteBuf)
+    );
+
+    // 4. Konstruktor pro čtení (vyžadován StreamCodec)
+    public WindDirectionSyncS2CPacket(FriendlyByteBuf buf) {
+        this(buf.readInt(), buf.readInt());
     }
 
-    // Metoda pro zápis do bufferu (musí brát RegistryFriendlyByteBuf)
-    // Už nemá @Override
-    public void write(final RegistryFriendlyByteBuf buffer) {
-        buffer.writeByte(windDirection);
+    // 5. Metoda pro zápis (vyžadována StreamCodec)
+    public void write(FriendlyByteBuf buf) {
+        buf.writeInt(this.direction);
+        buf.writeInt(this.strength);
     }
 
-    // Metoda type() zůstává stejná
+    // 6. Implementace požadované metody type()
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public CustomPacketPayload.Type<WindDirectionSyncS2CPacket> type() {
         return TYPE;
     }
 
-    // Metoda handle() zůstává stejná
-    public static void handle(final WindDirectionSyncS2CPacket msg, final IPayloadContext context) {
+    // 7. Handler (logika zůstává stejná)
+    public void handle(IPayloadContext context) {
         context.enqueueWork(() -> {
-            ClientWindData.setWindDirection(msg.windDirection);
-            // LighterThanAir.LOGGER.debug("Received wind direction sync packet: {}", msg.windDirection);
+            // Toto běží na klientovi
+            ClientWindData.setCurrentDirection(this.direction);
+            ClientWindData.setCurrentStrength(this.strength);
         });
     }
 }
