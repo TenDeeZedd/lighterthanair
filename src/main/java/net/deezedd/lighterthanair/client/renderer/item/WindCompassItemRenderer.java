@@ -22,10 +22,9 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
     @Override public ResourceLocation getTextureResource(WindCompassBlockItem a) { return TEXTURE; }
     @Override public ResourceLocation getAnimationResource(WindCompassBlockItem a) { return ANIM; }
 
-    // Použijeme setCustomAnimations pro item, jak jsme zjistili u korouhve
     @Override
     public void setCustomAnimations(WindCompassBlockItem animatable, long instanceId, AnimationState<WindCompassBlockItem> animationState) {
-        // Získáme kosti
+
         GeoBone compassBaseBone = this.getAnimationProcessor().getBone("compass_base");
         GeoBone arrowBone = this.getAnimationProcessor().getBone("arrow");
         GeoBone wind1Bone = this.getAnimationProcessor().getBone("wind1");
@@ -33,7 +32,7 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
 
         float time = (float) animationState.getAnimationTick();
 
-        // Animace "wind1" a "wind2" (ty běží vždy)
+        // Animace "wind1" a "wind2"
         if (wind1Bone != null)
             wind1Bone.setRotY(time * 0.003f);
         if (wind2Bone != null)
@@ -50,9 +49,7 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
         // Konfigurace pro Item Frame a Zemi (Absolutní směr jako Blok, zrcadlený)
         if (displayContext == ItemDisplayContext.FIXED || displayContext == ItemDisplayContext.GROUND) {
 
-            // --- OPRAVA: Definujeme 'blockWindYaw' ZDE ---
             float blockWindYaw = switch (windDirectionIndex) {
-                // Použijeme "BLOCK" switch (zrcadlený)
                 case 0 -> 0.0f;   // N
                 case 1 -> 315.0f; // NE
                 case 2 -> 270.0f; // E
@@ -79,11 +76,9 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
                 displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND ||
                 displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND ||
                 displayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND ||
-                displayContext == ItemDisplayContext.GUI) { // <-- GUI je teď tady
+                displayContext == ItemDisplayContext.GUI) {
 
-            // --- OPRAVA: Definujeme 'itemWindYaw' ZDE ---
             float itemWindYaw = switch (windDirectionIndex) {
-                // Použijeme "ITEM" switch (nezrcadlený)
                 case 0 -> 0.0f;   // N
                 case 1 -> 45.0f;  // NE
                 case 2 -> 90.0f;  // E
@@ -101,12 +96,12 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
 
                 if (player != null) {
                     float playerYaw = player.getViewYRot(animationState.getPartialTick()) + 180f;
-                    float relativeYaw = playerYaw - itemWindYaw; // Použijeme itemWindYaw
+                    float relativeYaw = playerYaw - itemWindYaw;
                     arrowBone.setRotY((float) Math.toRadians(relativeYaw));
                 }
             }
         }
-        // Ostatní případy (např. null context) - pro jistotu nastavíme absolutní směr
+        // Pojistka (např. null context) - absolutní směr
         else if (arrowBone != null) {
             float fallbackYaw = switch (windDirectionIndex) {
                 case 0 -> 0.0f;   // N... atd.
@@ -122,5 +117,5 @@ public class WindCompassItemRenderer extends GeoItemRenderer<WindCompassBlockIte
     public WindCompassItemRenderer() {
         super(new WindCompassItemModel());
     }
-    // Nepotřebujeme přepisovat render, spoléháme na JSON display a setCustomAnimations
+    // Nepotřebujeme přepisovat render
 }

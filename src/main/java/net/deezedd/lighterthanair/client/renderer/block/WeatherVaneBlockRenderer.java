@@ -70,7 +70,6 @@ public class WeatherVaneBlockRenderer extends GeoBlockRenderer<WeatherVaneBlockE
             float targetYawRad = (float) Math.toRadians(targetYaw);
             float currentYawRad = (float) Math.toRadians(this.currentRotation);
 
-            // --- ÚPRAVA ZDE ---
             // Spočítáme rozdíl
             float diff = targetYawRad - currentYawRad;
 
@@ -78,10 +77,18 @@ public class WeatherVaneBlockRenderer extends GeoBlockRenderer<WeatherVaneBlockE
             // Tím zajistíme, že se vždy otočí nejkratší cestou
             while (diff <= -(float)Math.PI) diff += 2 * (float)Math.PI;
             while (diff > (float)Math.PI) diff -= 2 * (float)Math.PI;
-            // --- KONEC ÚPRAVY ---
 
-            // Interpolujeme s ohledem na partialTick
-            currentYawRad += diff * partialTick * 0.02f;
+            // ===== ÚPRAVA ZDE =====
+            // 1. Získáme sílu větru
+            int strength = ClientWindData.getCurrentStrength();
+
+            // 2. Získáme rychlost na základě síly
+            float rotationSpeed = getRotationSpeedFromStrength(strength);
+
+            // 3. Interpolujeme s dynamickou rychlostí
+            currentYawRad += diff * partialTick * rotationSpeed;
+            // ======================
+
             this.currentRotation = (float) Math.toDegrees(currentYawRad);
 
             bone.setRotY(currentYawRad); // Nastavení rotace
@@ -90,4 +97,21 @@ public class WeatherVaneBlockRenderer extends GeoBlockRenderer<WeatherVaneBlockE
         super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 
+    // ===== PŘIDÁNO: Nová pomocná metoda =====
+    /**
+     * Vrací rychlost interpolace pro korouhev na základě síly větru.
+     * @param strength Síla větru (0-4)
+     * @return Rychlost (čím vyšší, tím rychlejší)
+     */
+    private float getRotationSpeedFromStrength(int strength) {
+        return switch (strength) {
+            case 0 -> 0.005f; // Síla 0: Velmi pomalé
+            case 1 -> 0.02f;  // Síla 1: Základní rychlost
+            case 2 -> 0.05f;  // Síla 2: Znatelné
+            case 3 -> 0.1f;   // Síla 3: Rychlé
+            case 4 -> 0.2f;   // Síla 4: Velmi rychlé
+            default -> 0.02f; // Pojistka
+        };
+    }
+    // ======================================
 }

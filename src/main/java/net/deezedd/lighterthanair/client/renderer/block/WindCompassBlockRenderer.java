@@ -42,13 +42,15 @@ class WindCompassBlockModel extends GeoModel<WindCompassBlockEntity> {
     }
 }
 
-public class WindCompassBlockRenderer extends GeoBlockRenderer<WindCompassBlockEntity> {
-    private float currentArrowRotation = 0.0f; // Paměť pro plynulost ručičky
+public class WindCompassBlockRenderer extends GeoBlockRenderer<WindCompassBlockEntity> implements BlockEntityRenderer<WindCompassBlockEntity> {
+
+    private float currentRotation = 0.0f;
 
     public WindCompassBlockRenderer(BlockEntityRendererProvider.Context context) {
         super(new WindCompassBlockModel());
     }
 
+    // --- Metoda render (Beze změny) ---
     public void render(WindCompassBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {        if (!(blockEntity instanceof WindCompassBlockEntity windCompass)) return;
 
         BlockState blockState = windCompass.getBlockState();
@@ -70,52 +72,79 @@ public class WindCompassBlockRenderer extends GeoBlockRenderer<WindCompassBlockE
         poseStack.popPose();
     }
 
+    // --- Metoda renderRecursively (Upraveno) ---
     @Override
     public void renderRecursively(PoseStack poseStack, WindCompassBlockEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
 
-        Level level = animatable.getLevel();
-        float time = 0;
-        if (level != null) {
-            time = level.getGameTime() + partialTick;
-        }
-
-        // Animace "wind1" - pomalá rotace
-        if (bone.getName().equals("wind1")) {
-            bone.setRotY(time * 0.003f); // Uprav rychlost (0.05f) podle potřeby
-        }
-
-        // Animace "wind2" - pomalá rotace opačným směrem
-        if (bone.getName().equals("wind2")) {
-            bone.setRotY(time * -0.002f);
-        }
-
-        // Animace "arrow" - podle větru
+        // --- Střelka (arrow) - (Beze změny, používá konstantní rychlost 0.05f) ---
         if (bone.getName().equals("arrow")) {
-            // Zkopírovaná logika z WeatherVaneRenderer
             int windDirectionIndex = ClientWindData.getCurrentDirection();
             float targetYaw = switch (windDirectionIndex) {
-                case 0 -> 0.0f;   // N
-                case 1 -> 315.0f;  // NE
-                case 2 -> 270.0f;  // E
-                case 3 -> 225.0f; // SE
-                case 4 -> 180.0f; // S
-                case 5 -> 135.0f; // SW
-                case 6 -> 90.0f; // W
-                case 7 -> 45.0f; // NW
-                default -> 0.0f;
+                case 0 -> 0.0f; // N
+                case 1 -> -45.0f; // NE
+                case 2 -> -90.0f; // E
+                case 3 -> -135.0f; // SE
+                case 4 -> -180.0f;   // S
+                case 5 -> -225.0f;  // SW
+                case 6 -> -270.0f;  // W
+                case 7 -> -315.0f; // NW
+                default -> 0.0f; // N
             };
 
             float targetYawRad = (float) Math.toRadians(targetYaw);
-            float currentYawRad = (float) Math.toRadians(this.currentArrowRotation);
+            float currentYawRad = (float) Math.toRadians(this.currentRotation);
+
             float diff = targetYawRad - currentYawRad;
             while (diff <= -(float)Math.PI) diff += 2 * (float)Math.PI;
             while (diff > (float)Math.PI) diff -= 2 * (float)Math.PI;
-            currentYawRad += diff * partialTick * 0.2f;
-            this.currentArrowRotation = (float) Math.toDegrees(currentYawRad);
+
+            currentYawRad += diff * partialTick * 0.05f; // Pevná rychlost 0.05f
+            this.currentRotation = (float) Math.toDegrees(currentYawRad);
 
             bone.setRotY(currentYawRad);
         }
 
+        // --- Mráčky (wind1, wind2) - (Upraveno) ---
+        if (animatable.getLevel() != null) {
+            float time = animatable.getLevel().getGameTime() + partialTick;
+
+            // ===== ÚPRAVA ZDE =====
+            // 1. Získáme sílu větru
+            int strength = ClientWindData.getCurrentStrength();
+
+            // 2. Získáme základní rychlost mráčků
+            float cloudSpeed = getCloudSpeedFromStrength(strength);
+            // ======================
+
+            if (bone.getName().equals("wind1")) {
+                // 3. Aplikujeme rychlost (plná rychlost, jeden směr)
+                bone.setRotY(time * cloudSpeed);
+            }
+
+            if (bone.getName().equals("wind2")) {
+                // 4. Aplikujeme rychlost (poloviční rychlost, opačný směr)
+                bone.setRotY(time * -cloudSpeed * 0.5f);
+            }
+        }
+
         super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
+
+    // ===== PŘIDÁNO: Nová pomocná metoda =====
+    /**
+     * Vrací rychlost otáčení mráčků na základě síly větru.
+     * @param strength Síla větru (0-4)
+     * @return Rychlost otáčení
+     */
+    private float getCloudSpeedFromStrength(int strength) {
+        return switch (strength) {
+            case 0 -> 0.0f;    // Síla 0: Stojí
+            case 1 -> 0.01f;   // Síla 1: Pomalu
+            case 2 -> 0.04f;   // Síla 2: Normálně
+            case 3 -> 0.08f;   // Síla 3: Rychle
+            case 4 -> 0.15f;   // Síla 4: Fičí
+            default -> 0.01f; // Pojistka
+        };
+    }
+    // ======================================
 }
