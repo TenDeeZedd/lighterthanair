@@ -91,5 +91,3 @@ public class WeatherVaneBlockRenderer extends GeoBlockRenderer<WeatherVaneBlockE
     }
 
 }
-
-

@@ -32,7 +32,7 @@ public class ServerEvents {
             ServerLevel overworld = event.getServer().getLevel(Level.OVERWORLD);
             if (overworld == null) return;
 
-            MinecraftServer server = overworld.getServer(); // Získáme server
+            MinecraftServer server = overworld.getServer();
             GameRules gameRules = overworld.getGameRules();
             WindDirectionSavedData windData = WindDirectionSavedData.get(overworld);
 
@@ -48,6 +48,7 @@ public class ServerEvents {
                 wasThundering = false;
                 wasRaining = false;
                 weatherChangeScheduledTick = 0;
+                windData.setStormAnchorInitialized(false); // <-- OPRAVA: Reset kotvy
                 return;
             }
 
@@ -55,6 +56,12 @@ public class ServerEvents {
             boolean weatherChanged = (isThundering != wasThundering || isRaining != wasRaining);
 
             if (weatherChanged) {
+                // ===== OPRAVA: Reset kotvy při konci bouřky =====
+                if (wasThundering && !isThundering) {
+                    LighterThanAir.LOGGER.info("Thunderstorm ended, resetting wind anchor.");
+                    windData.setStormAnchorInitialized(false);
+                }
+                // =============================================
                 LighterThanAir.LOGGER.info("Weather state changed (T:" + isThundering + ", R:" + isRaining + "). Scheduling wind update.");
                 weatherChangeScheduledTick = gameTime + WEATHER_CHANGE_DELAY_TICKS;
             }
@@ -62,10 +69,8 @@ public class ServerEvents {
             if (weatherChangeScheduledTick > 0 && gameTime >= weatherChangeScheduledTick) {
                 if (!weatherChanged) {
                     LighterThanAir.LOGGER.info("Executing scheduled weather update for stable weather (T:" + isThundering + ", R:" + isRaining + ").");
-                    // ===== OPRAVA ZDE: Voláme centralizované metody =====
-                    ModGameRules.triggerDirectionUpdate(server, true); // Vynutí nový směr a nový časovač
-                    ModGameRules.triggerStrengthUpdate(server, true); // Vynutí novou sílu a nový časovač
-                    // ==================================================
+                    ModGameRules.triggerDirectionUpdate(server, true);
+                    ModGameRules.triggerStrengthUpdate(server, true);
                     weatherChangeScheduledTick = 0;
                 }
             }
@@ -85,54 +90,41 @@ public class ServerEvents {
         }
     }
 
-    // Upraveno pro přijetí MinecraftServer
+    // ... (metoda handleWindStrength zůstává stejná)
     private static void handleWindStrength(ServerLevel overworld, GameRules gameRules, WindDirectionSavedData windData,
                                            long gameTime, MinecraftServer server) {
 
-        // A. Zámek má nejvyšší prioritu
         if (gameRules.getBoolean(ModGameRules.RULE_WINDLOCKSTRENGTH)) {
             windData.setStrength(gameRules.getInt(ModGameRules.RULE_WINDSETSTRENGTH));
             return;
         }
 
-        // B. Kontrola povolení
         if (!gameRules.getBoolean(ModGameRules.RULE_WINDSTRENGTHEABLED)) {
             windData.setStrength(0);
             return;
         }
 
-        // C. Dynamická změna / Chaotická bouřka
-        // Nyní se staráme jen o to, KDYŽ časovač vyprší.
         if (gameTime < windData.getNextStrengthChangeTick()) {
-            return; // Ještě není čas
+            return;
         }
 
-        // D. Čas na změnu!
-        // ===== OPRAVA ZDE: Voláme centralizovanou metodu =====
         ModGameRules.triggerStrengthUpdate(server, true);
-        // ==================================================
     }
 
-    // Upraveno pro přijetí MinecraftServer
+    // ... (metoda handleWindDirection zůstává stejná)
     private static void handleWindDirection(ServerLevel overworld, GameRules gameRules, WindDirectionSavedData windData,
                                             long gameTime, MinecraftServer server) {
 
-        // A. Zámek má nejvyšší prioritu
         if (gameRules.getBoolean(ModGameRules.RULE_WINDLOCKDIRECTION)) {
             windData.setDirection(gameRules.getInt(ModGameRules.RULE_WINDSETDIRECTION));
             return;
         }
 
-        // B. Dynamická změna / Chaotická bouřka
-        // Nyní se staráme jen o to, KDYŽ časovač vyprší.
         if (gameTime < windData.getNextChangeTick()) {
-            return; // Ještě není čas
+            return;
         }
 
-        // D. Čas na změnu!
-        // ===== OPRAVA ZDE: Voláme centralizovanou metodu =====
         ModGameRules.triggerDirectionUpdate(server, true);
-        // ==================================================
     }
 
 

@@ -14,35 +14,35 @@ import java.util.Random;
 public class WindDirectionSavedData extends SavedData {
 
     private static final String DATA_NAME = "dzlta_wind_direction";
-    private final Random random = new Random();
 
     // Směr
     private int currentDirection = 0; // 0=N, 1=NE, ..., 7=NW
-    private long nextChangeTick = 0; // Kdy má nastat příští změna směru
+    private long nextChangeTick = 0;
 
     // Síla
     private int currentStrength = 0; // 0-4
-    private long nextStrengthChangeTick = 0; // Kdy má nastat příští změna síly
+    private long nextStrengthChangeTick = 0;
+
+    // ===== PŘIDÁNO (Bouřková kotva) =====
+    private int stormAnchorDirection = 0;
+    private boolean stormAnchorInitialized = false;
+    // ====================================
 
 
     public static WindDirectionSavedData load(CompoundTag tag, HolderLookup.Provider registries) {
         WindDirectionSavedData data = new WindDirectionSavedData();
 
-        // Načítání směru
-        if (tag.contains("windDirection", CompoundTag.TAG_INT)) {
-            data.currentDirection = tag.getInt("windDirection");
-        }
+        data.currentDirection = tag.getInt("windDirection");
+        data.nextChangeTick = tag.getLong("nextChangeTick");
+        data.currentStrength = tag.getInt("windStrength");
+        data.nextStrengthChangeTick = tag.getLong("nextStrengthChangeTick");
 
-        if (tag.contains("nextChangeTick", CompoundTag.TAG_LONG)) {
-            data.nextChangeTick = tag.getLong("nextChangeTick");
+        // Načítání kotvy
+        if (tag.contains("stormAnchorDirection", CompoundTag.TAG_INT)) {
+            data.stormAnchorDirection = tag.getInt("stormAnchorDirection");
         }
-
-        // Načítání síly
-        if (tag.contains("windStrength", CompoundTag.TAG_INT)) {
-            data.currentStrength = tag.getInt("windStrength");
-        }
-        if (tag.contains("nextStrengthChangeTick", CompoundTag.TAG_LONG)) {
-            data.nextStrengthChangeTick = tag.getLong("nextStrengthChangeTick");
+        if (tag.contains("stormAnchorInitialized", CompoundTag.TAG_BYTE)) {
+            data.stormAnchorInitialized = tag.getBoolean("stormAnchorInitialized");
         }
 
         return data;
@@ -50,13 +50,14 @@ public class WindDirectionSavedData extends SavedData {
 
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
-        // Ukládání směru
         tag.putInt("windDirection", this.currentDirection);
         tag.putLong("nextChangeTick", this.nextChangeTick);
-
-        // Ukládání síly
         tag.putInt("windStrength", this.currentStrength);
         tag.putLong("nextStrengthChangeTick", this.nextStrengthChangeTick);
+
+        // Ukládání kotvy
+        tag.putInt("stormAnchorDirection", this.stormAnchorDirection);
+        tag.putBoolean("stormAnchorInitialized", this.stormAnchorInitialized);
 
         return tag;
     }
@@ -66,7 +67,7 @@ public class WindDirectionSavedData extends SavedData {
     public void setRandomDirectionAndPlanNext(Level level, int duration) {
         setRandomDirectionInternal(level.random);
         this.nextChangeTick = level.getGameTime() + duration;
-        setDirty(); // Uložíme změny
+        setDirty();
     }
 
     public long getNextChangeTick() {
@@ -95,22 +96,19 @@ public class WindDirectionSavedData extends SavedData {
     }
 
     // --- Metody pro Sílu ---
-
+    // (Všechny metody pro sílu zůstávají stejné...)
     public void setRandomStrengthInternal(ServerLevel level) {
         RandomSource random = level.random;
         int newStrength;
 
         if (level.isThundering()) {
-            // Bouřka: Vždy síla 4
             newStrength = 4;
         } else if (level.isRaining()) {
-            // Déšť: 70% šance na 2, 25% na 3, 5% na 4
             float chance = random.nextFloat();
             if (chance < 0.70f) newStrength = 2;
             else if (chance < 0.95f) newStrength = 3;
             else newStrength = 4;
         } else {
-            // Jasno: 10% šance na 0, 60% na 1, 30% na 2
             float chance = random.nextFloat();
             if (chance < 0.10f) newStrength = 0;
             else if (chance < 0.70f) newStrength = 1;
@@ -132,7 +130,6 @@ public class WindDirectionSavedData extends SavedData {
         setDirty();
     }
 
-
     public void setStrength(int strength) {
         if (strength >= 0 && strength <= 4) {
             this.currentStrength = strength;
@@ -152,6 +149,26 @@ public class WindDirectionSavedData extends SavedData {
     public long getNextStrengthChangeTick() {
         return this.nextStrengthChangeTick;
     }
+
+    // ===== PŘIDÁNO (Gettery/Settery pro kotvu) =====
+    public int getStormAnchorDirection() {
+        return this.stormAnchorDirection;
+    }
+
+    public void setStormAnchorDirection(int direction) {
+        this.stormAnchorDirection = direction;
+        setDirty();
+    }
+
+    public boolean isStormAnchorInitialized() {
+        return this.stormAnchorInitialized;
+    }
+
+    public void setStormAnchorInitialized(boolean initialized) {
+        this.stormAnchorInitialized = initialized;
+        setDirty();
+    }
+    // =============================================
 
     // --- Statická metoda ---
 
