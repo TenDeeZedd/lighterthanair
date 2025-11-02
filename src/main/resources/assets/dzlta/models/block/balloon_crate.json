@@ -5,7 +5,7 @@
 		"0": "dzlta:blocks/balloon_crate",
 		"3": "dzlta:blocks/balloon_crate_text_balloon",
 		"4": "dzlta:entity/large_balloon/crate_pig",
-		"5": "dzlta:blocks/balloon_crate_text_large",
+		"5": "dzlta:blocks/balloon_crate_text_small",
 		"particle": "dzlta:blocks/balloon_crate"
 	},
 	"elements": [

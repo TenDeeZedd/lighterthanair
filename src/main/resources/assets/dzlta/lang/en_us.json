@@ -21,6 +21,23 @@
   "block.dzlta.weather_vane": "Weather Vane",
   "block.dzlta.wind_compass": "Wind Compass",
 
+  "block.dzlta.small_white_balloon_crate": "Small White Balloon Crate",
+  "block.dzlta.small_orange_balloon_crate": "Small Orange Balloon Crate",
+  "block.dzlta.small_magenta_balloon_crate": "Small Magenta Balloon Crate",
+  "block.dzlta.small_light_blue_balloon_crate": "Small Light Blue Balloon Crate",
+  "block.dzlta.small_yellow_balloon_crate": "Small Yellow Balloon Crate",
+  "block.dzlta.small_lime_balloon_crate": "Small Lime Balloon Crate",
+  "block.dzlta.small_pink_balloon_crate": "Small Pink Balloon Crate",
+  "block.dzlta.small_gray_balloon_crate": "Small Gray Balloon Crate",
+  "block.dzlta.small_light_gray_balloon_crate": "Small Light Gray Balloon Crate",
+  "block.dzlta.small_cyan_balloon_crate": "Small Cyan Balloon Crate",
+  "block.dzlta.small_purple_balloon_crate": "Small Purple Balloon Crate",
+  "block.dzlta.small_blue_balloon_crate": "Small Blue Balloon Crate",
+  "block.dzlta.small_brown_balloon_crate": "Small Brown Balloon Crate",
+  "block.dzlta.small_green_balloon_crate": "Small Green Balloon Crate",
+  "block.dzlta.small_red_balloon_crate": "Small Red Balloon Crate",
+  "block.dzlta.small_black_balloon_crate": "Small Black Balloon Crate",
+
 
   "sound.dzlta.vane_creak1": "Weather Vane Creaking",
   "sound.dzlta.vane_creak2": "Weather Vane Creaking",

@@ -40,6 +40,9 @@ public class LighterThanAir {
 
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+
+        ModBlocks.registerBalloonCrates();
+
         ModCreativeTabs.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModSounds.register(modEventBus);

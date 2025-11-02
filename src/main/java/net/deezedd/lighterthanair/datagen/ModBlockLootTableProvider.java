@@ -28,6 +28,10 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         this.dropSelf(ModBlocks.WEATHER_VANE.get());
         this.dropSelf(ModBlocks.WIND_COMPASS.get());
 
+        ModBlocks.BLOCKS.getEntries().stream()
+                .filter(blockHolder -> blockHolder.getId().getPath().contains("_balloon_crate"))
+                .forEach(blockHolder -> this.dropSelf(blockHolder.get()));
+
     }
 
     @Override

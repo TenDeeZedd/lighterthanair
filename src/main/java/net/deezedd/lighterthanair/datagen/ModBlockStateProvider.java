@@ -4,9 +4,14 @@ import net.deezedd.lighterthanair.LighterThanAir;
 import net.deezedd.lighterthanair.block.ModBlocks;
 import net.deezedd.lighterthanair.block.WindCompassBlock;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
+import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class ModBlockStateProvider extends BlockStateProvider {
     public ModBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
@@ -32,5 +37,40 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 .partialState().with(WindCompassBlock.FLOATING, true)
                 .addModels(new ConfiguredModel(compassParticleModel));
         // --- KONEC LOGIKY KOMPASU ---
+
+        registerBalloonCrateModels();
+    }
+
+    private void registerBalloonCrateModels() {
+        // 1. Definujeme cestu k našemu základnímu (parent) modelu
+        ResourceLocation parentModel = modLoc("block/balloon_crate");
+
+        // 2. Projdeme všechny barvy
+        for (String color : ModBlocks.VANILLA_COLORS) {
+            String blockName = "small_" + color + "_balloon_crate";
+
+            // 3. ===== OPRAVA ZDE =====
+            // Najdeme DeferredHolder, ne DeferredBlock
+            DeferredHolder<Block, ? extends Block> blockHolder = ModBlocks.BLOCKS.getEntries().stream()
+                    .filter(b -> b.getId().getPath().equals(blockName))
+                    .findFirst()
+                    .orElseThrow();
+            // ========================
+
+            // 4. Vytvoříme texturu pro tuto barvu
+            ResourceLocation texture = modLoc("block/small_" + color + "_balloon_crate");
+
+            // 5. Vygenerujeme block model
+            ModelFile generatedModel = models().withExistingParent(blockName, parentModel)
+                    .texture("0", modLoc("block/balloon_crate"))
+                    .texture("3", modLoc("block/balloon_crate_text_balloon"))
+                    .texture("5", modLoc("block/balloon_crate_text_small"))
+                    .texture("4", texture); // Naše dynamická textura
+
+            // 6. ===== OPRAVA ZDE =====
+            // Použijeme .get() pro získání Blocku z Holderu
+            horizontalBlock(blockHolder.get(), generatedModel);
+            // ========================
+        }
     }
 }

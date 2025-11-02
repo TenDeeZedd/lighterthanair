@@ -4,7 +4,9 @@ import net.deezedd.lighterthanair.LighterThanAir;
 import net.deezedd.lighterthanair.block.ModBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +24,10 @@ public class ModBlockTagProvider extends BlockTagsProvider {
                 .add(ModBlocks.WEATHER_VANE.get());
         this.tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(ModBlocks.WIND_COMPASS.get());
+
+        ModBlocks.BLOCKS.getEntries().stream()
+                .filter(blockHolder -> blockHolder.getId().getPath().contains("_balloon_crate"))
+                .forEach(blockHolder -> this.tag(BlockTags.MINEABLE_WITH_AXE));
 
     }
 }
