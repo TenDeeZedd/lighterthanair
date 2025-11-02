@@ -63,5 +63,10 @@
   "gamerule.windStrengthRandomInterval": "Wind Strength Random Interval",
   "gamerule.windStrengthRandomInterval.description": "Maximum random time (in seconds) added to the base interval for wind strength changes.",
   "gamerule.windStrengthChaoticStorms": "Chaotic Storms (Strength)",
-  "gamerule.windStrengthChaoticStorms.description": "If enabled, wind strength is forced to max (4) during thunderstorms."
+  "gamerule.windStrengthChaoticStorms.description": "If enabled, wind strength is forced to max (4) during thunderstorms.",
+
+  "gamerule.windCorridorMinY": "Wind Corridor Min Y",
+  "gamerule.windCorridorMinY.description": "The minimum Y-level (inclusive) for the wind corridor. (Range: -64 to 309)",
+  "gamerule.windCorridorHeight": "Wind Corridor Height",
+  "gamerule.windCorridorHeight.description": "The height (in blocks) of the wind corridor, starting from Min Y. (Range: 10 to 383)"
 }

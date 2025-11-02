@@ -5,6 +5,7 @@ import net.deezedd.lighterthanair.network.ModMessages;
 import net.deezedd.lighterthanair.network.packet.WindDirectionSyncS2CPacket;
 import net.deezedd.lighterthanair.world.WindDirectionSavedData;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameRules;
@@ -14,8 +15,7 @@ import java.util.function.BiConsumer;
 
 public class ModGameRules {
 
-    // --- Pravidla pro Směr Větru ---
-    // (Definice gamerules zůstávají stejné, včetně P1 a P2...)
+    // --- Wind + Wind Direction rules ---
     public static final GameRules.Key<GameRules.BooleanValue> RULE_WINDENABLED =
             GameRules.register("windEnabled", GameRules.Category.MISC, GameRules.BooleanValue.create(true,
                     (server, value) -> {
@@ -72,8 +72,7 @@ public class ModGameRules {
                     }));
 
 
-    // --- Pravidla pro Sílu Větru ---
-    // (Beze změny)
+    // --- Wind Strength rules ---
     public static final GameRules.Key<GameRules.BooleanValue> RULE_WINDSTRENGTHEABLED =
             GameRules.register("windStrengthEnabled", GameRules.Category.MISC, GameRules.BooleanValue.create(true,
                     (server, value) -> {
@@ -127,6 +126,38 @@ public class ModGameRules {
             GameRules.register("windStrengthChaoticStorms", GameRules.Category.MISC, GameRules.BooleanValue.create(true,
                     (server, value) -> {
                         LighterThanAir.LOGGER.info("Wind Strength Chaotic Storms set to: " + value.get());
+                    }));
+
+
+    // --- Wind Corridor rules ---
+    public static final GameRules.Key<GameRules.IntegerValue> RULE_WINDCORRIDORMINY =
+            GameRules.register("windCorridorMinY", GameRules.Category.MISC, GameRules.IntegerValue.create(170,
+                    (server, value) -> {
+                        // Ruční validace
+                        int newMin = value.get();
+                        int clampedMin = Mth.clamp(newMin, -64, 309); // Upneme hodnotu
+
+                        if (newMin != clampedMin) {
+                            value.set(clampedMin, server); // Opravíme hodnotu, pokud byla mimo rozsah
+                            LighterThanAir.LOGGER.warn("WindCorridorMinY set outside range (" + newMin + "). Clamping to " + clampedMin + ".");
+                        } else {
+                            LighterThanAir.LOGGER.info("WindCorridorMinY set to: " + clampedMin);
+                        }
+                    }));
+
+    public static final GameRules.Key<GameRules.IntegerValue> RULE_WINDCORRIDORHEIGHT =
+            GameRules.register("windCorridorHeight", GameRules.Category.MISC, GameRules.IntegerValue.create(60,
+                    (server, value) -> {
+                        // Ruční validace
+                        int newHeight = value.get();
+                        int clampedHeight = Mth.clamp(newHeight, 10, 383); // Upneme hodnotu
+
+                        if (newHeight != clampedHeight) {
+                            value.set(clampedHeight, server); // Opravíme hodnotu, pokud byla mimo rozsah
+                            LighterThanAir.LOGGER.warn("WindCorridorHeight set outside range (" + newHeight + "). Clamping to " + clampedHeight + ".");
+                        } else {
+                            LighterThanAir.LOGGER.info("WindCorridorHeight set to: " + clampedHeight);
+                        }
                     }));
 
 
