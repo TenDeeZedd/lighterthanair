@@ -1,10 +1,12 @@
 package net.deezedd.lighterthanair.block;
 
 import com.mojang.serialization.MapCodec;
+import net.deezedd.lighterthanair.sound.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -58,6 +60,7 @@ public class BalloonCrateBlock extends HorizontalDirectionalBlock {
             serverLevel.sendParticles(ParticleTypes.EXPLOSION,
                     pPos.getX() + 0.5, pPos.getY() + 0.5, pPos.getZ() + 0.5,
                     1, 0, 0, 0, 0);
+            serverLevel.playSound(null, pPos, ModSounds.CRATE_POP.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
         }
 
         // 3. TODO: Zde bude spawn entity balónu

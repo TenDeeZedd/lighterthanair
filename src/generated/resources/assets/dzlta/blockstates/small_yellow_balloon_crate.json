@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "dzlta:block/small_yellow_balloon_crate",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "dzlta:block/small_yellow_balloon_crate"
+    },
+    "facing=south": {
+      "model": "dzlta:block/small_yellow_balloon_crate",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "dzlta:block/small_yellow_balloon_crate",
+      "y": 270
+    }
+  }
+}

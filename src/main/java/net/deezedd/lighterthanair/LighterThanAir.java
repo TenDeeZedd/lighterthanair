@@ -2,6 +2,7 @@ package net.deezedd.lighterthanair;
 
 import net.deezedd.lighterthanair.block.ModBlocks;
 import net.deezedd.lighterthanair.blockentity.ModBlockEntities;
+import net.deezedd.lighterthanair.client.ClientSetup;
 import net.deezedd.lighterthanair.datagen.DataGenerators;
 import net.deezedd.lighterthanair.item.ModCreativeTabs;
 import net.deezedd.lighterthanair.item.ModItems;

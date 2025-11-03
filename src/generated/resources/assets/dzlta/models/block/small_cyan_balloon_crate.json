@@ -1,0 +1,11 @@
+{
+  "parent": "dzlta:block/balloon_crate",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "0": "dzlta:block/balloon_crate",
+    "3": "dzlta:block/balloon_crate_text_balloon",
+    "4": "dzlta:block/small_cyan_balloon_crate",
+    "5": "dzlta:block/balloon_crate_text_small",
+    "particle": "dzlta:block/balloon_crate"
+  }
+}

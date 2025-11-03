@@ -28,5 +28,11 @@
     "sounds": [
       "dzlta:vane_creak5"
     ]
+  },
+  "crate_pop": {
+    "subtitle": "sound.dzlta.crate_pop",
+    "sounds": [
+      "dzlta:crate_pop"
+    ]
   }
 }

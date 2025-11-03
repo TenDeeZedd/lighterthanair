@@ -25,9 +25,12 @@ public class ModBlockTagProvider extends BlockTagsProvider {
         this.tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(ModBlocks.WIND_COMPASS.get());
 
+        TagsProvider.TagAppender<Block> axeTag = this.tag(BlockTags.MINEABLE_WITH_AXE);
+
+        // Najdeme všechny bloky beden a přidáme je do tagu
         ModBlocks.BLOCKS.getEntries().stream()
                 .filter(blockHolder -> blockHolder.getId().getPath().contains("_balloon_crate"))
-                .forEach(blockHolder -> this.tag(BlockTags.MINEABLE_WITH_AXE));
+                .forEach(blockHolder -> ((IntrinsicTagAppender<Block>) axeTag).add(blockHolder.get()));
 
     }
 }

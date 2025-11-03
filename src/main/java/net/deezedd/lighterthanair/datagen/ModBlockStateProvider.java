@@ -65,7 +65,9 @@ public class ModBlockStateProvider extends BlockStateProvider {
                     .texture("0", modLoc("block/balloon_crate"))
                     .texture("3", modLoc("block/balloon_crate_text_balloon"))
                     .texture("5", modLoc("block/balloon_crate_text_small"))
-                    .texture("4", texture); // Naše dynamická textura
+                    .texture("4", texture) // Naše dynamická textura
+                    .texture("particle", modLoc("block/balloon_crate"))
+                    .renderType("minecraft:cutout");
 
             // 6. ===== OPRAVA ZDE =====
             // Použijeme .get() pro získání Blocku z Holderu

@@ -1,5 +1,21 @@
 {
   "values": [
-    "dzlta:wind_compass"
+    "dzlta:wind_compass",
+    "dzlta:small_white_balloon_crate",
+    "dzlta:small_orange_balloon_crate",
+    "dzlta:small_magenta_balloon_crate",
+    "dzlta:small_light_blue_balloon_crate",
+    "dzlta:small_yellow_balloon_crate",
+    "dzlta:small_lime_balloon_crate",
+    "dzlta:small_pink_balloon_crate",
+    "dzlta:small_gray_balloon_crate",
+    "dzlta:small_light_gray_balloon_crate",
+    "dzlta:small_cyan_balloon_crate",
+    "dzlta:small_purple_balloon_crate",
+    "dzlta:small_blue_balloon_crate",
+    "dzlta:small_brown_balloon_crate",
+    "dzlta:small_green_balloon_crate",
+    "dzlta:small_red_balloon_crate",
+    "dzlta:small_black_balloon_crate"
   ]
 }

@@ -133,7 +133,7 @@ public class WeatherVaneBlock extends BaseEntityBlock {
         // 2 (E) -> 4
         // ...
         // 7 (NW) -> 14
-        int signalStrength = (windDirectionIndex * 2);
+        int signalStrength = (windDirectionIndex * 2) + 1;
 
         return signalStrength;
     }

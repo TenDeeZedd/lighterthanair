@@ -25,6 +25,8 @@ public class ModSounds {
             VANE_CREAK_1, VANE_CREAK_2, VANE_CREAK_3, VANE_CREAK_4, VANE_CREAK_5
     );
 
+    public static final Supplier<SoundEvent> CRATE_POP = registerSoundEvent("crate_pop");
+
 
     private static Supplier<SoundEvent> registerSoundEvent(String name) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(LighterThanAir.MODID, name);
