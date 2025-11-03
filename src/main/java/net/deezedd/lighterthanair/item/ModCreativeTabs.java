@@ -28,6 +28,11 @@ public class ModCreativeTabs {
                                 .filter(itemHolder -> itemHolder.getId().getPath().contains("_balloon_crate"))
                                 .forEach(itemHolder -> output.accept(itemHolder.get()));
 
+                        output.accept(ModItems.REINFORCED_FABRIC.get());
+
+                        ModItems.SMALL_BALLOON_ENVELOPES.values()
+                                .forEach(item -> output.accept(item.get()));
+
 
 
                     })

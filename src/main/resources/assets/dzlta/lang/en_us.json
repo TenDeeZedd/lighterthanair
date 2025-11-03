@@ -16,6 +16,24 @@
   "item.dzlta.weather_vane": "Weather Vane",
   "item.dzlta.wind_compass": "Wind Compass",
 
+  "item.dzlta.reinforced_fabric": "Reinforced Fabric",
+  "item.dzlta.small_white_balloon_envelope": "Small White Balloon Envelope",
+  "item.dzlta.small_orange_balloon_envelope": "Small Orange Balloon Envelope",
+  "item.dzlta.small_magenta_balloon_envelope": "Small Magenta Balloon Envelope",
+  "item.dzlta.small_light_blue_balloon_envelope": "Small Light Blue Balloon Envelope",
+  "item.dzlta.small_yellow_balloon_envelope": "Small Yellow Balloon Envelope",
+  "item.dzlta.small_lime_balloon_envelope": "Small Lime Balloon Envelope",
+  "item.dzlta.small_pink_balloon_envelope": "Small Pink Balloon Envelope",
+  "item.dzlta.small_gray_balloon_envelope": "Small Gray Balloon Envelope",
+  "item.dzlta.small_light_gray_balloon_envelope": "Small Light Gray Balloon Envelope",
+  "item.dzlta.small_cyan_balloon_envelope": "Small Cyan Balloon Envelope",
+  "item.dzlta.small_purple_balloon_envelope": "Small Purple Balloon Envelope",
+  "item.dzlta.small_blue_balloon_envelope": "Small Blue Balloon Envelope",
+  "item.dzlta.small_brown_balloon_envelope": "Small Brown Balloon Envelope",
+  "item.dzlta.small_green_balloon_envelope": "Small Green Balloon Envelope",
+  "item.dzlta.small_red_balloon_envelope": "Small Red Balloon Envelope",
+  "item.dzlta.small_black_balloon_envelope": "Small Black Balloon Envelope",
+
 
 
   "block.dzlta.weather_vane": "Weather Vane",

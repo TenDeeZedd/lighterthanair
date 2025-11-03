@@ -24,7 +24,18 @@ public class ModItemModelProvider extends ItemModelProvider {
             // Vytvoří item model, který odkazuje na block model se stejným jménem
             withExistingParent(name, modLoc("block/small_" + color + "_balloon_crate"));
         }
+
+        simpleItem(ModItems.REINFORCED_FABRIC.getId());
+
+        // 2. Všech 16 barevných plášťů
+        ModItems.SMALL_BALLOON_ENVELOPES.values()
+                .forEach(itemHolder -> simpleItem(itemHolder.getId()));
         // ======================
+    }
+
+    private void simpleItem(ResourceLocation item) {
+        withExistingParent(item.getPath(), "item/generated")
+                .texture("layer0", new ResourceLocation(item.getNamespace(), "item/" + item.getPath()));
     }
 }
 
