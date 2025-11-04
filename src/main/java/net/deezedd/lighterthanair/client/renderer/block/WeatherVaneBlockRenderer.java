@@ -51,9 +51,8 @@ public class WeatherVaneBlockRenderer extends GeoBlockRenderer<WeatherVaneBlockE
     public void renderRecursively(PoseStack poseStack, WeatherVaneBlockEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
 
         if (bone.getName().equals("vane_rotate")) {
-            // --- Cíl rotace (ČTEME Z KLIENTSKÝCH DAT) ---
-            int windDirectionIndex = ClientWindData.getCurrentDirection(); // Získáme 0-7
-            float targetYaw = switch (windDirectionIndex) { // Převod na úhel
+            int windDirectionIndex = ClientWindData.getCurrentDirection();
+            float targetYaw = switch (windDirectionIndex) {
                 case 0 -> 0.0f; // N
                 case 1 -> -45.0f; // NE
                 case 2 -> -90.0f; // E
@@ -64,54 +63,40 @@ public class WeatherVaneBlockRenderer extends GeoBlockRenderer<WeatherVaneBlockE
                 case 7 -> -315.0f; // NW
                 default -> 0.0f; // N
             };
-            // --- Konec čtení větru ---
 
-            // Plynulá interpolace (zůstává stejná)
             float targetYawRad = (float) Math.toRadians(targetYaw);
             float currentYawRad = (float) Math.toRadians(this.currentRotation);
 
-            // Spočítáme rozdíl
             float diff = targetYawRad - currentYawRad;
 
-            // Normalizujeme rozdíl na rozsah (-PI, +PI), tj. (-180°, +180°)
-            // Tím zajistíme, že se vždy otočí nejkratší cestou
+            // Shorter path rotation
             while (diff <= -(float)Math.PI) diff += 2 * (float)Math.PI;
             while (diff > (float)Math.PI) diff -= 2 * (float)Math.PI;
 
-            // ===== ÚPRAVA ZDE =====
-            // 1. Získáme sílu větru
             int strength = ClientWindData.getCurrentStrength();
 
-            // 2. Získáme rychlost na základě síly
             float rotationSpeed = getRotationSpeedFromStrength(strength);
 
-            // 3. Interpolujeme s dynamickou rychlostí
             currentYawRad += diff * partialTick * rotationSpeed;
-            // ======================
 
             this.currentRotation = (float) Math.toDegrees(currentYawRad);
 
-            bone.setRotY(currentYawRad); // Nastavení rotace
+            bone.setRotY(currentYawRad);
         }
 
         super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 
-    // ===== PŘIDÁNO: Nová pomocná metoda =====
-    /**
-     * Vrací rychlost interpolace pro korouhev na základě síly větru.
-     * @param strength Síla větru (0-4)
-     * @return Rychlost (čím vyšší, tím rychlejší)
-     */
+    // Rotation Speed by Wind Strength
     private float getRotationSpeedFromStrength(int strength) {
         return switch (strength) {
-            case 0 -> 0.005f; // Síla 0: Velmi pomalé
-            case 1 -> 0.02f;  // Síla 1: Základní rychlost
-            case 2 -> 0.05f;  // Síla 2: Znatelné
-            case 3 -> 0.1f;   // Síla 3: Rychlé
-            case 4 -> 0.2f;   // Síla 4: Velmi rychlé
-            default -> 0.02f; // Pojistka
+            case 0 -> 0.005f; // Síla 0: Very slow
+            case 1 -> 0.02f;  // Síla 1: Normal
+            case 2 -> 0.05f;  // Síla 2:
+            case 3 -> 0.1f;   // Síla 3: Strong
+            case 4 -> 0.2f;   // Síla 4: Storm
+            default -> 0.02f;
         };
     }
-    // ======================================
+
 }

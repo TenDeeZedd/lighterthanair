@@ -43,7 +43,9 @@ public class WindCompassBlock extends BaseEntityBlock {
 
     public static final BooleanProperty FLOATING = BooleanProperty.create("floating");
 
+    // Standard shape
     private static final VoxelShape SHAPE = Block.box(4.5, 0, 4.5, 11.5, 1, 11.5);
+    // Floating shape for item frame combination
     private static final VoxelShape SHAPE_FLOATING = Block.box(4.5, 1, 4.5, 11.5, 2, 11.5);
 
     public WindCompassBlock(BlockBehaviour.Properties properties) {
@@ -72,7 +74,7 @@ public class WindCompassBlock extends BaseEntityBlock {
         List<ItemFrame> itemFrames = level.getEntitiesOfClass(ItemFrame.class, blockAABB);
 
         for (ItemFrame frame : itemFrames) {
-            if (frame.getXRot() == -90.0f) { // Hledáme jen ležící
+            if (frame.getXRot() == -90.0f) { // Item Frame only on floor
                 return true;
             }
         }

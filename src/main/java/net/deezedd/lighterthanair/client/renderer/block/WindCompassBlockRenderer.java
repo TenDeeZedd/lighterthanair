@@ -50,33 +50,26 @@ public class WindCompassBlockRenderer extends GeoBlockRenderer<WindCompassBlockE
         super(new WindCompassBlockModel());
     }
 
-    // --- Metoda render (Beze změny) ---
     public void render(WindCompassBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {        if (!(blockEntity instanceof WindCompassBlockEntity windCompass)) return;
 
         BlockState blockState = windCompass.getBlockState();
 
-        // Uložíme si aktuální stav PoseStacku
         poseStack.pushPose();
 
-        // Pokud je blok ve stavu "floating", posuneme ho o 2 pixely nahoru
+        // Render shift when item frame is present (FLOATING)
         if (blockState.getValue(WindCompassBlock.FLOATING)) {
-            // 2 pixely / 16 pixelů na blok = 0.125
+            // Render shift
             poseStack.translate(0, 0.0625, 0);
         }
 
-        // Zavoláme původní metodu render z GeoBlockRenderer,
-        // která se postará o vše ostatní (včetně volání renderRecursively)
         super.render(windCompass, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
 
-        // Vrátíme PoseStack do původního stavu
         poseStack.popPose();
     }
 
-    // --- Metoda renderRecursively (Upraveno) ---
     @Override
     public void renderRecursively(PoseStack poseStack, WindCompassBlockEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
 
-        // --- Střelka (arrow) - (Beze změny, používá konstantní rychlost 0.05f) ---
         if (bone.getName().equals("arrow")) {
             int windDirectionIndex = ClientWindData.getCurrentDirection();
             float targetYaw = switch (windDirectionIndex) {
@@ -98,31 +91,23 @@ public class WindCompassBlockRenderer extends GeoBlockRenderer<WindCompassBlockE
             while (diff <= -(float)Math.PI) diff += 2 * (float)Math.PI;
             while (diff > (float)Math.PI) diff -= 2 * (float)Math.PI;
 
-            currentYawRad += diff * partialTick * 0.05f; // Pevná rychlost 0.05f
+            // Arrow rotation speed
+            currentYawRad += diff * partialTick * 0.05f;
             this.currentRotation = (float) Math.toDegrees(currentYawRad);
 
             bone.setRotY(currentYawRad);
         }
 
-        // --- Mráčky (wind1, wind2) - (Upraveno) ---
         if (animatable.getLevel() != null) {
             float time = animatable.getLevel().getGameTime() + partialTick;
-
-            // ===== ÚPRAVA ZDE =====
-            // 1. Získáme sílu větru
             int strength = ClientWindData.getCurrentStrength();
-
-            // 2. Získáme základní rychlost mráčků
             float cloudSpeed = getCloudSpeedFromStrength(strength);
-            // ======================
 
             if (bone.getName().equals("wind1")) {
-                // 3. Aplikujeme rychlost (plná rychlost, jeden směr)
                 bone.setRotY(time * cloudSpeed);
             }
 
             if (bone.getName().equals("wind2")) {
-                // 4. Aplikujeme rychlost (poloviční rychlost, opačný směr)
                 bone.setRotY(time * -cloudSpeed * 0.5f);
             }
         }
@@ -130,21 +115,16 @@ public class WindCompassBlockRenderer extends GeoBlockRenderer<WindCompassBlockE
         super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 
-    // ===== PŘIDÁNO: Nová pomocná metoda =====
-    /**
-     * Vrací rychlost otáčení mráčků na základě síly větru.
-     * @param strength Síla větru (0-4)
-     * @return Rychlost otáčení
-     */
+    // Rotation Speed by Wind Strength
     private float getCloudSpeedFromStrength(int strength) {
         return switch (strength) {
-            case 0 -> 0.0f;    // Síla 0: Stojí
-            case 1 -> 0.01f;   // Síla 1: Pomalu
-            case 2 -> 0.04f;   // Síla 2: Normálně
-            case 3 -> 0.08f;   // Síla 3: Rychle
-            case 4 -> 0.15f;   // Síla 4: Fičí
-            default -> 0.01f; // Pojistka
+            case 0 -> 0.0f;    // Síla 0: Very slow
+            case 1 -> 0.01f;   // Síla 1: Normal
+            case 2 -> 0.04f;   // Síla 2:
+            case 3 -> 0.08f;   // Síla 3: Strong
+            case 4 -> 0.15f;   // Síla 4: Storm
+            default -> 0.01f;
         };
     }
-    // ======================================
+
 }

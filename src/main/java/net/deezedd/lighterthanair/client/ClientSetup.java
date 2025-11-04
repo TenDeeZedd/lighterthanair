@@ -23,18 +23,11 @@ public class ClientSetup {
 
     public static void init(FMLClientSetupEvent event) {
 
-        // ===== OPRAVA ZDE (Problém 2) =====
-        // Musíme všem bednám nastavit RenderType na CUTOUT
-
-        // Projdeme všechny registrované bloky
         ModBlocks.BLOCKS.getEntries().stream()
-                // Vyfiltrujeme jen ty, které jsou bedny
                 .filter(blockHolder -> blockHolder.getId().getPath().contains("_balloon_crate"))
-                // Pro každou bednu nastavíme správný RenderLayer
                 .forEach(blockHolder -> {
                     ItemBlockRenderTypes.setRenderLayer(blockHolder.get(), RenderType.cutout());
                 });
-        // ===================================
     }
 
     @SubscribeEvent

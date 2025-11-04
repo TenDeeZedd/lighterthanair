@@ -15,18 +15,17 @@ public class WindDirectionSavedData extends SavedData {
 
     private static final String DATA_NAME = "dzlta_wind_direction";
 
-    // Směr
+    // Direction
     private int currentDirection = 0; // 0=N, 1=NE, ..., 7=NW
     private long nextChangeTick = 0;
 
-    // Síla
+    // Strength
     private int currentStrength = 0; // 0-4
     private long nextStrengthChangeTick = 0;
 
-    // ===== PŘIDÁNO (Bouřková kotva) =====
+    // Storm anchor
     private int stormAnchorDirection = 0;
     private boolean stormAnchorInitialized = false;
-    // ====================================
 
 
     public static WindDirectionSavedData load(CompoundTag tag, HolderLookup.Provider registries) {
@@ -55,14 +54,14 @@ public class WindDirectionSavedData extends SavedData {
         tag.putInt("windStrength", this.currentStrength);
         tag.putLong("nextStrengthChangeTick", this.nextStrengthChangeTick);
 
-        // Ukládání kotvy
+        // Anchor save
         tag.putInt("stormAnchorDirection", this.stormAnchorDirection);
         tag.putBoolean("stormAnchorInitialized", this.stormAnchorInitialized);
 
         return tag;
     }
 
-    // --- Metody pro Směr ---
+    // --- Direction methods ---
 
     public void setRandomDirectionAndPlanNext(Level level, int duration) {
         setRandomDirectionInternal(level.random);
@@ -95,8 +94,7 @@ public class WindDirectionSavedData extends SavedData {
         return this.currentDirection;
     }
 
-    // --- Metody pro Sílu ---
-    // (Všechny metody pro sílu zůstávají stejné...)
+    // --- Strength methods ---
     public void setRandomStrengthInternal(ServerLevel level) {
         RandomSource random = level.random;
         int newStrength;
@@ -150,7 +148,7 @@ public class WindDirectionSavedData extends SavedData {
         return this.nextStrengthChangeTick;
     }
 
-    // ===== PŘIDÁNO (Gettery/Settery pro kotvu) =====
+    // Anchor
     public int getStormAnchorDirection() {
         return this.stormAnchorDirection;
     }
@@ -168,9 +166,8 @@ public class WindDirectionSavedData extends SavedData {
         this.stormAnchorInitialized = initialized;
         setDirty();
     }
-    // =============================================
 
-    // --- Statická metoda ---
+
 
     public static WindDirectionSavedData get(ServerLevel level) {
         DimensionDataStorage storage = level.getServer().overworld().getDataStorage();

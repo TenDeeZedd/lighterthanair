@@ -17,7 +17,6 @@ public class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WeatherVaneBlockEntity>> WEATHER_VANE_BE =
             BLOCK_ENTITIES.register("weather_vane_be", () ->
                     BlockEntityType.Builder.of(WeatherVaneBlockEntity::new,
-                            // Řekneme mu, ke kterému bloku patří
                             ModBlocks.WEATHER_VANE.get()
                     ).build(null));
 

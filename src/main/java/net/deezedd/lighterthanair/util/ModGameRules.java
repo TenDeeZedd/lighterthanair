@@ -161,7 +161,6 @@ public class ModGameRules {
                     }));
 
 
-    // --- Pomocné metody pro resetování časovačů ---
 
     public static void triggerDirectionUpdate(MinecraftServer server, boolean forceNewValue) {
         ServerLevel overworld = server.getLevel(Level.OVERWORLD);
@@ -180,14 +179,11 @@ public class ModGameRules {
         int duration;
         String logMessage;
 
-        // ===== OPRAVA ZDE (Logika kmitající kotvy) =====
         if (chaoticStorms && isThundering) {
-            // --- CHAOTICKÁ BOUŘKA ---
-            duration = (3 + random.nextInt(3)) * 20; // 3-5 sekund
+            duration = (3 + random.nextInt(3)) * 20; // 3-5 sec
             logMessage = "Chaotic Storm Direction tick!";
 
             if (forceNewValue) {
-                // 1. Inicializujeme kotvu, pokud ještě není
                 if (!windData.isStormAnchorInitialized()) {
                     LighterThanAir.LOGGER.info("Storm anchor not set. Anchoring to current direction: " + windData.getCurrentDirection());
                     windData.setStormAnchorDirection(windData.getCurrentDirection());
@@ -196,25 +192,22 @@ public class ModGameRules {
 
                 int anchorDir = windData.getStormAnchorDirection();
 
-                // 2. Vypočítáme "kmitající" směr (vždy -1, 0, nebo +1 od kotvy)
-                int change = random.nextInt(3) - 1; // Výsledek je -1, 0, nebo 1
-                int newDir = (anchorDir + change + 8) % 8; // (+8 pro zajištění kladného modula)
+                // 2. Calculate the "oscillating" direction (always -1, 0, or +1 from the anchor)
+                int change = random.nextInt(3) - 1; // Result je -1, 0, or 1
+                int newDir = (anchorDir + change + 8) % 8; // (+8 to ensure positive modulus)
 
-                // Nastavíme tento nový kmitající směr
                 windData.setDirection(newDir);
 
-                // 3. Máme 10% šanci, že posuneme "kotvu" na tento nový směr
-                if (random.nextFloat() < 0.10f) { // 10% šance
+                // 3. 10% chance of moving the "anchor" to new direction.
+                if (random.nextFloat() < 0.10f) { // 10%
                     LighterThanAir.LOGGER.info("Wind storm anchor is drifting! New anchor: " + newDir);
                     windData.setStormAnchorDirection(newDir);
                 }
             }
-            // else: !forceNewValue (jen resetujeme časovač, směr ponecháme)
 
         } else {
-            // --- DYNAMICKÁ (NORMÁLNÍ) ZMĚNA ---
 
-            // Pokud byla kotva nastavena (bouřka právě skončila), resetujeme ji
+            // --- Dynamic change---
             if (windData.isStormAnchorInitialized()) {
                 LighterThanAir.LOGGER.info("Non-storm tick. Resetting wind anchor.");
                 windData.setStormAnchorInitialized(false);
@@ -226,18 +219,16 @@ public class ModGameRules {
             logMessage = "Dynamic Wind Direction tick!";
 
             if (forceNewValue) {
-                windData.setRandomDirectionInternal(random); // Standardní náhodný směr 0-7
+                windData.setRandomDirectionInternal(random); // Standard random dir 0-7
             }
         }
 
         LighterThanAir.LOGGER.info(logMessage);
-        // ===================================================
 
         windData.setNextChangeTick(overworld.getGameTime() + duration);
         LighterThanAir.LOGGER.info("New Wind Direction timer set. Current Direction: " + windData.getCurrentDirection() + ". Next change in " + (duration / 20) + " seconds.");
     }
 
-    // Metoda triggerStrengthUpdate zůstává stejná jako v předchozí verzi
     public static void triggerStrengthUpdate(MinecraftServer server, boolean forceNewValue) {
         ServerLevel overworld = server.getLevel(Level.OVERWORLD);
         if (overworld == null) return;
@@ -264,7 +255,7 @@ public class ModGameRules {
         }
 
         if (chaoticStorms && isThundering) {
-            duration = (3 + random.nextInt(3)) * 20; // 3-5 sekund
+            duration = (3 + random.nextInt(3)) * 20; // 3-5 sec
             logMessage = "Chaotic Storm Strength tick!";
         } else {
             int baseInterval = gameRules.getInt(RULE_WINDSTRENGTHBASEINTERVAL) * 20;
@@ -280,6 +271,5 @@ public class ModGameRules {
     }
 
     public static void register() {
-        // Tato metoda je volána v LighterThanAir.java, aby se pravidla načetla
     }
 }

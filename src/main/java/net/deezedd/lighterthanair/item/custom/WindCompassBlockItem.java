@@ -20,7 +20,6 @@ public class WindCompassBlockItem extends BlockItem implements GeoItem {
 
     public WindCompassBlockItem(Block pBlock, Properties pProperties) {
         super(pBlock, pProperties);
-        // Nepotřebujeme SingletonGeoAnimatable
     }
 
     @Override
@@ -31,13 +30,12 @@ public class WindCompassBlockItem extends BlockItem implements GeoItem {
             @Override
             public BlockEntityWithoutLevelRenderer getGeoItemRenderer() {
                 if (this.renderer == null)
-                    this.renderer = new WindCompassItemRenderer(); // Odkaz na nový renderer
+                    this.renderer = new WindCompassItemRenderer();
                 return this.renderer;
             }
         });
     }
 
-    // Controller jen běží, aby renderer mohl manipulovat s kostmi
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>(this, "controller", 0, state -> PlayState.CONTINUE));

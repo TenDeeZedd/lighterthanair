@@ -24,11 +24,11 @@ public class ServerEvents {
     private static boolean wasThundering = false;
     private static boolean wasRaining = false;
     private static long weatherChangeScheduledTick = 0;
-    private static final int WEATHER_CHANGE_DELAY_TICKS = 40; // 2 sekundy zpoždění
+    private static final int WEATHER_CHANGE_DELAY_TICKS = 40; // 2 sec
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
-        if (event.getServer().getTickCount() % 20 == 0) { // Každou sekundu
+        if (event.getServer().getTickCount() % 20 == 0) {
             ServerLevel overworld = event.getServer().getLevel(Level.OVERWORLD);
             if (overworld == null) return;
 
@@ -40,7 +40,7 @@ public class ServerEvents {
             boolean isThundering = overworld.isThundering();
             boolean isRaining = overworld.isRaining();
 
-            // 1. Master kontrola
+            // 1. Master control
             if (!gameRules.getBoolean(ModGameRules.RULE_WINDENABLED)) {
                 windData.setDirection(0);
                 windData.setStrength(0);
@@ -48,20 +48,18 @@ public class ServerEvents {
                 wasThundering = false;
                 wasRaining = false;
                 weatherChangeScheduledTick = 0;
-                windData.setStormAnchorInitialized(false); // <-- OPRAVA: Reset kotvy
+                windData.setStormAnchorInitialized(false);
                 return;
             }
 
-            // 2. Logika zpožděné reakce na počasí
+            // 2. Delayed weather response logic
             boolean weatherChanged = (isThundering != wasThundering || isRaining != wasRaining);
 
             if (weatherChanged) {
-                // ===== OPRAVA: Reset kotvy při konci bouřky =====
                 if (wasThundering && !isThundering) {
                     LighterThanAir.LOGGER.info("Thunderstorm ended, resetting wind anchor.");
                     windData.setStormAnchorInitialized(false);
                 }
-                // =============================================
                 LighterThanAir.LOGGER.info("Weather state changed (T:" + isThundering + ", R:" + isRaining + "). Scheduling wind update.");
                 weatherChangeScheduledTick = gameTime + WEATHER_CHANGE_DELAY_TICKS;
             }
@@ -75,22 +73,21 @@ public class ServerEvents {
                 }
             }
 
-            // 3. Zpracování logiky SÍLY větru
+            // 3. Wind Strenght
             handleWindStrength(overworld, gameRules, windData, gameTime, server);
 
-            // 4. Zpracování logiky SMĚRU větru
+            // 4. Wind Direction
             handleWindDirection(overworld, gameRules, windData, gameTime, server);
 
-            // 5. Synchronizace
+            // 5. Synch
             syncWindToAllPlayers(overworld, windData.getCurrentDirection(), windData.getCurrentStrength());
 
-            // 6. Uložení stavu počasí
+            // 6. Save
             wasThundering = isThundering;
             wasRaining = isRaining;
         }
     }
 
-    // ... (metoda handleWindStrength zůstává stejná)
     private static void handleWindStrength(ServerLevel overworld, GameRules gameRules, WindDirectionSavedData windData,
                                            long gameTime, MinecraftServer server) {
 
@@ -111,7 +108,6 @@ public class ServerEvents {
         ModGameRules.triggerStrengthUpdate(server, true);
     }
 
-    // ... (metoda handleWindDirection zůstává stejná)
     private static void handleWindDirection(ServerLevel overworld, GameRules gameRules, WindDirectionSavedData windData,
                                             long gameTime, MinecraftServer server) {
 

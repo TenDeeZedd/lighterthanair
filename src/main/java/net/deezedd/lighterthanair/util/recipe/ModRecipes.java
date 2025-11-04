@@ -16,10 +16,6 @@ public class ModRecipes {
     public static final DeferredRegister<RecipeType<?>> TYPES =
             DeferredRegister.create(BuiltInRegistries.RECIPE_TYPE, LighterThanAir.MODID);
 
-    //public static final Supplier<RecipeSerializer<DryingRecipe>> DRYING_SERIALIZER =
-    //        SERIALIZERS.register("drying", () -> DryingRecipe.Serializer.INSTANCE);
-
-
     public static void register(IEventBus eventBus) {
         SERIALIZERS.register(eventBus);
         TYPES.register(eventBus);

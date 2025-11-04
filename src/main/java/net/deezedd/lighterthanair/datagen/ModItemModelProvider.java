@@ -19,11 +19,10 @@ public class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        // ===== OPRAVA ZDE =====
-        // Pro generování item modelu nepotřebujeme DeferredBlock/Holder, stačí nám název.
+
         for (String color : ModBlocks.VANILLA_COLORS) {
             String name = "small_" + color + "_balloon_crate";
-            // Vytvoří item model, který odkazuje na block model se stejným jménem
+            // Item model parent definition
             withExistingParent(name, modLoc("block/small_" + color + "_balloon_crate"));
         }
 
@@ -32,26 +31,20 @@ public class ModItemModelProvider extends ItemModelProvider {
                 .findFirst()
                 .orElseThrow());
 
-        // 2. Všech 16 barevných plášťů
         for (String color : ModBlocks.VANILLA_COLORS) {
             String name = "small_" + color + "_balloon_envelope";
 
-            // Najdeme item a zaregistrujeme pro něj model
             simpleItem(ModItems.ITEMS.getEntries().stream()
                     .filter(item -> item.getId().getPath().equals(name))
                     .findFirst()
                     .orElseThrow());
         }
-        // ======================
+
     }
 
     private void simpleItem(DeferredHolder<Item, ? extends Item> item) {
         withExistingParent(item.getId().getPath(), "item/generated")
-
-                // ===== OPRAVA CHYBY ZDE =====
-                // Místo 'new ResourceLocation(...)' použijeme 'ResourceLocation.fromNamespaceAndPath(...)'
                 .texture("layer0", ResourceLocation.fromNamespaceAndPath(item.getId().getNamespace(), "item/" + item.getId().getPath()));
-        // ============================
     }
 }
 

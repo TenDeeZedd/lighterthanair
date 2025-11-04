@@ -2,7 +2,7 @@ package net.deezedd.lighterthanair.client;
 
 public class ClientWindData {
     private static int currentDirection = 0;
-    private static int currentStrength = 0; // Nová proměnná pro sílu
+    private static int currentStrength = 0;
 
     public static int getCurrentDirection() {
         return currentDirection;
@@ -12,7 +12,6 @@ public class ClientWindData {
         ClientWindData.currentDirection = direction;
     }
 
-    // Nové metody pro sílu
     public static int getCurrentStrength() {
         return currentStrength;
     }

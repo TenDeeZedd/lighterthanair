@@ -42,31 +42,25 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
 
     @Override
     protected void buildRecipes(RecipeOutput pRecipeOutput) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, ModItems.WEATHER_VANE_ITEM.get()) // Výstup: naše korouhev
-                // Definujeme tvar receptu (řádky shora dolů)
-                .pattern("I N") // První řádek: Ingot, Prázdno, Nugget
-                .pattern("II ") // Druhý řádek: Ingot, Ingot, Prázdno
-                .pattern(" N ") // Třetí řádek: Prázdno, Nugget, Prázdno
-                // Definujeme, co znamenají jednotlivé znaky
-                .define('I', Items.IRON_INGOT) // 'I' je Iron Ingot
-                .define('N', Items.IRON_NUGGET) // 'N' je Iron Nugget
-                // Zajistíme, že recept bude odemčen, když hráč sebere železo
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, ModItems.WEATHER_VANE_ITEM.get())
+                .pattern("I N")
+                .pattern("II ")
+                .pattern(" N ")
+                .define('I', Items.IRON_INGOT)
+                .define('N', Items.IRON_NUGGET)
                 .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
-                // Uložíme recept
                 .save(pRecipeOutput);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.WIND_COMPASS_ITEM.get()) // Změň na ModItems.WIND_COMPASS.get()
-                .pattern("FL ") // F=Feather, L=Log, mezera=Prázdno
-                .pattern("LIL") // L=Log, I=Ingot
-                .pattern(" L ") // L=Log
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.WIND_COMPASS_ITEM.get())
+                .pattern("FL ")
+                .pattern("LIL")
+                .pattern(" L ")
                 .define('F', Items.FEATHER)
-                .define('L', ItemTags.LOGS) // Použijeme Tag pro logy
+                .define('L', ItemTags.LOGS)
                 .define('I', Items.IRON_INGOT)
                 .unlockedBy("has_feather", has(Items.FEATHER))
-                // Musíme dát každému receptu unikátní jméno (ID)
                 .save(pRecipeOutput, ResourceLocation.fromNamespaceAndPath(LighterThanAir.MODID, "wind_compass_1"));
 
-        // Recept 2: Pírko vpravo nahoře (pozice 3)
         ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.WIND_COMPASS_ITEM.get())
                 .pattern(" LF")
                 .pattern("LIL")
@@ -77,7 +71,6 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy("has_feather", has(Items.FEATHER))
                 .save(pRecipeOutput, ResourceLocation.fromNamespaceAndPath(LighterThanAir.MODID, "wind_compass_2"));
 
-        // Recept 3: Pírko vlevo dole (pozice 7)
         ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.WIND_COMPASS_ITEM.get())
                 .pattern(" L ")
                 .pattern("LIL")
@@ -88,7 +81,6 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy("has_feather", has(Items.FEATHER))
                 .save(pRecipeOutput, ResourceLocation.fromNamespaceAndPath(LighterThanAir.MODID, "wind_compass_3"));
 
-        // Recept 4: Pírko vpravo dole (pozice 9)
         ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.WIND_COMPASS_ITEM.get())
                 .pattern(" L ")
                 .pattern("LIL")
@@ -100,17 +92,17 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(pRecipeOutput, ResourceLocation.fromNamespaceAndPath(LighterThanAir.MODID, "wind_compass_4"));
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.REINFORCED_FABRIC.get(), 1)
-                .pattern("LWL") // Pozice 1,2,3
-                .pattern("WLW") // Pozice 4,5,6
-                .pattern("LWL") // Pozice 7,8,9
+                .pattern("LWL")
+                .pattern("WLW")
+                .pattern("LWL")
                 .define('L', Items.LEATHER)
-                .define('W', ItemTags.WOOL) // Jakákoliv vlna
+                .define('W', ItemTags.WOOL)
                 .unlockedBy("has_leather", has(Items.LEATHER))
                 .unlockedBy("has_wool", has(ItemTags.WOOL))
                 .save(pRecipeOutput);
 
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.SMALL_BALLOON_ENVELOPES.get("brown").get(), 1)
-                .requires(ModItems.REINFORCED_FABRIC.get(), 4) // 4x Fabric
+                .requires(ModItems.REINFORCED_FABRIC.get(), 4)
                 .unlockedBy("has_reinforced_fabric", has(ModItems.REINFORCED_FABRIC.get()))
                 .save(pRecipeOutput, "small_brown_balloon_envelope_from_fabric");
 
@@ -123,8 +115,8 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                     .pattern(" D ")
                     .pattern("DED")
                     .pattern(" D ")
-                    .define('D', dye) // Specifické barvivo
-                    .define('E', ModTags.Items.SMALL_BALLOON_ENVELOPES) // Jakýkoliv plášť
+                    .define('D', dye)
+                    .define('E', ModTags.Items.SMALL_BALLOON_ENVELOPES)
                     .unlockedBy("has_reinforced_fabric", has(ModItems.REINFORCED_FABRIC.get()))
                     .save(pRecipeOutput, "small_" + color + "_balloon_envelope_from_dyeing");
         }

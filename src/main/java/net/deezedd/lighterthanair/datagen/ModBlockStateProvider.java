@@ -20,47 +20,40 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        // Registrace pro korouhev (aby měla particle model)
+        // Weather Vane "fake model" for Particle registration
         simpleBlock(ModBlocks.WEATHER_VANE.get(),
                 models().withExistingParent("weather_vane_particle", "minecraft:block/block")
                         .texture("particle", blockTexture(ModBlocks.WEATHER_VANE.get())));
 
-        // --- PŘIDÁME LOGIKU PRO KOMPAS ---
-        // Vytvoříme "falešný" model jen pro částice (stejně jako u korouhve)
+        // Wind Compass "fake model" for Particle registration
         var compassParticleModel = models().withExistingParent("wind_compass_particle", "minecraft:block/block")
                 .texture("particle", blockTexture(ModBlocks.WIND_COMPASS.get()));
 
-        // Registrujeme varianty pro FLOATING=true a FLOATING=false
+        // Variants: Floating
         getVariantBuilder(ModBlocks.WIND_COMPASS.get())
                 .partialState().with(WindCompassBlock.FLOATING, false)
                 .addModels(new ConfiguredModel(compassParticleModel))
                 .partialState().with(WindCompassBlock.FLOATING, true)
                 .addModels(new ConfiguredModel(compassParticleModel));
-        // --- KONEC LOGIKY KOMPASU ---
 
         registerBalloonCrateModels();
     }
 
     private void registerBalloonCrateModels() {
-        // 1. Definujeme cestu k našemu základnímu (parent) modelu
         ResourceLocation parentModel = modLoc("block/balloon_crate");
 
-        // 2. Projdeme všechny barvy
         for (String color : ModBlocks.VANILLA_COLORS) {
             String blockName = "small_" + color + "_balloon_crate";
 
-            // 3. ===== OPRAVA ZDE =====
-            // Najdeme DeferredHolder, ne DeferredBlock
             DeferredHolder<Block, ? extends Block> blockHolder = ModBlocks.BLOCKS.getEntries().stream()
                     .filter(b -> b.getId().getPath().equals(blockName))
                     .findFirst()
                     .orElseThrow();
-            // ========================
 
-            // 4. Vytvoříme texturu pro tuto barvu
+            // Texture name definition
             ResourceLocation texture = modLoc("block/small_" + color + "_balloon_crate");
 
-            // 5. Vygenerujeme block model
+            // Model generation
             ModelFile generatedModel = models().withExistingParent(blockName, parentModel)
                     .texture("0", modLoc("block/balloon_crate"))
                     .texture("3", modLoc("block/balloon_crate_text_balloon"))
@@ -69,10 +62,7 @@ public class ModBlockStateProvider extends BlockStateProvider {
                     .texture("particle", modLoc("block/balloon_crate"))
                     .renderType("minecraft:cutout");
 
-            // 6. ===== OPRAVA ZDE =====
-            // Použijeme .get() pro získání Blocku z Holderu
             horizontalBlock(blockHolder.get(), generatedModel);
-            // ========================
         }
     }
 }

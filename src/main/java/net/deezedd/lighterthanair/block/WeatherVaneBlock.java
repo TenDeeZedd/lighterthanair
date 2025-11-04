@@ -111,28 +111,25 @@ public class WeatherVaneBlock extends BaseEntityBlock {
 
     @Override
     public int getAnalogOutputSignal(BlockState pState, Level pLevel, BlockPos pPos) {
-        // Redstone logika běží jen na serveru
+
         if (pLevel.isClientSide() || !(pLevel instanceof ServerLevel serverLevel)) {
             return 0;
         }
 
         GameRules gameRules = serverLevel.getGameRules();
 
-        // Pokud je vítr vypnutý, signál je 0
         if (!gameRules.getBoolean(ModGameRules.RULE_WINDENABLED)) {
             return 0;
         }
 
-        // Získáme aktuální směr větru
         WindDirectionSavedData windData = WindDirectionSavedData.get(serverLevel);
-        int windDirectionIndex = windData.getCurrentDirection(); // Získáme 0-7
+        int windDirectionIndex = windData.getCurrentDirection();
 
-        // Převedeme index 0-7 na sílu signálu 1-15
-        // 0 (N) -> 0
-        // 1 (NE) -> 2
-        // 2 (E) -> 4
+        // 0 (N) -> 1
+        // 1 (NE) -> 3
+        // 2 (E) -> 5
         // ...
-        // 7 (NW) -> 14
+        // 7 (NW) -> 15
         int signalStrength = (windDirectionIndex * 2) + 1;
 
         return signalStrength;

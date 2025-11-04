@@ -33,7 +33,8 @@ class WeatherVaneItemModel extends GeoModel<WeatherVaneBlockItem> {
 
     @Override
     public void setCustomAnimations(WeatherVaneBlockItem animatable, long instanceId, AnimationState<WeatherVaneBlockItem> animationState) {
-        // Forced stop rotation of item model
+
+        // Forced rotation stop for item model
         GeoBone rootBone = this.getAnimationProcessor().getBone("vane_rotate");
 
         if (rootBone != null) {
@@ -44,7 +45,6 @@ class WeatherVaneItemModel extends GeoModel<WeatherVaneBlockItem> {
     }
 }
 
-// A samotný renderer
 public class WeatherVaneItemRenderer extends GeoItemRenderer<WeatherVaneBlockItem> {
     public WeatherVaneItemRenderer() {
         super(new WeatherVaneItemModel());

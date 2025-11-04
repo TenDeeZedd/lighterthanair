@@ -20,10 +20,8 @@ public class WindCompassBlockEntity extends BlockEntity implements GeoBlockEntit
 
     public WindCompassBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntities.WIND_COMPASS_BE.get(), pPos, pBlockState);
-        // Nepotřebujeme SingletonGeoAnimatable, protože nic netriggerujeme
     }
 
-    // Controller jen běží, aby renderer mohl manipulovat s kostmi
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "controller", 0, state -> PlayState.CONTINUE));
@@ -35,11 +33,11 @@ public class WindCompassBlockEntity extends BlockEntity implements GeoBlockEntit
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, WindCompassBlockEntity blockEntity) {
-        if (level.isClientSide()) return; // Logika jen na serveru
+        if (level.isClientSide()) return;
 
         boolean isCurrentlyFloating = state.getValue(WindCompassBlock.FLOATING);
 
-        // Hledáme Item Frame
+        // Item Frame search
         AABB blockAABB = new AABB(pos);
         List<ItemFrame> itemFrames = level.getEntitiesOfClass(ItemFrame.class, blockAABB);
         boolean itemFramePresent = false;
@@ -50,14 +48,12 @@ public class WindCompassBlockEntity extends BlockEntity implements GeoBlockEntit
             }
         }
 
-        // Případ 1: Item Frame tam je, ale blok není floating (Mělo by být řešeno v getStateForPlacement, ale pojistka)
         if (itemFramePresent && !isCurrentlyFloating) {
             level.setBlock(pos, state.setValue(WindCompassBlock.FLOATING, true), 3);
         }
 
-        // Případ 2: Item Frame tam NENÍ, ale blok je floating (Hráč zničil Item Frame)
         if (!itemFramePresent && isCurrentlyFloating) {
-            level.setBlock(pos, state.setValue(WindCompassBlock.FLOATING, false), 3); // Spadne dolů
+            level.setBlock(pos, state.setValue(WindCompassBlock.FLOATING, false), 3);
         }
     }
 }

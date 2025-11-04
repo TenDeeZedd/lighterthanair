@@ -23,10 +23,9 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class BalloonCrateBlock extends HorizontalDirectionalBlock {
-    // Používáme standardní FACING property
+
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
-    // Codec pro registraci bloku
     public static final MapCodec<BalloonCrateBlock> CODEC = simpleCodec(BalloonCrateBlock::new);
 
     @Override
@@ -36,26 +35,21 @@ public class BalloonCrateBlock extends HorizontalDirectionalBlock {
 
     public BalloonCrateBlock(BlockBehaviour.Properties pProperties) {
         super(pProperties);
-        // Defaultně se dívá na sever
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
-    // --- Logika spawnování ---
-
-    // ===== OPRAVA ZDE: Toto je správná metoda =====
+    // Balloon spawn logic
     @Override
     protected InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, BlockHitResult pHit) {
-        // Logika běží jen na serveru
+
         if (pLevel.isClientSide()) {
-            return InteractionResult.SUCCESS; // Na klientu řekneme, že to proběhlo
+            return InteractionResult.SUCCESS;
         }
 
         // TODO: Zde bude kontrola volného místa (isSpaceClear)
 
-        // 1. Zničíme blok (false = neshodí item)
         pLevel.removeBlock(pPos, false);
 
-        // 2. Spustíme particly výbuchu
         if (pLevel instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.EXPLOSION,
                     pPos.getX() + 0.5, pPos.getY() + 0.5, pPos.getZ() + 0.5,
@@ -63,32 +57,26 @@ public class BalloonCrateBlock extends HorizontalDirectionalBlock {
             serverLevel.playSound(null, pPos, ModSounds.CRATE_POP.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
         }
 
-        // 3. TODO: Zde bude spawn entity balónu
+        // TODO: Zde bude spawn entity balónu
 
-        return InteractionResult.CONSUME; // Server řekne, že akce proběhla
+        return InteractionResult.CONSUME;
     }
-    // ===========================================
 
-    // --- Logika otáčení (Mirror/Rotate) ---
-    // Tato metoda se volá při položení bloku, aby se správně otočil k hráči
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext pContext) {
         return this.defaultBlockState().setValue(FACING, pContext.getHorizontalDirection().getOpposite());
     }
 
-    // Tato metoda se volá, když se struktura (nebo hráč) pokusí blok otočit
     @Override
     public BlockState rotate(BlockState pState, Rotation pRotation) {
         return pState.setValue(FACING, pRotation.rotate(pState.getValue(FACING)));
     }
 
-    // Tato metoda se volá, když se struktura (nebo hráč) pokusí blok zrcadlit
     @Override
     public BlockState mirror(BlockState pState, Mirror pMirror) {
         return pState.rotate(pMirror.getRotation(pState.getValue(FACING)));
     }
 
-    // Zaregistrujeme FACING property
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
         pBuilder.add(FACING);

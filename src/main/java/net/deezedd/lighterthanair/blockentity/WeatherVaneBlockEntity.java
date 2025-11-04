@@ -23,9 +23,7 @@ public class WeatherVaneBlockEntity extends BlockEntity implements GeoBlockEntit
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    // Paměť pro detekci změny
     private int lastKnownDirection = 0;
-    // Čítač pro chaotické zvuky (kolik změn zbývá do zvuku)
     private int stormCreakChangeCounter = 0;
 
     public WeatherVaneBlockEntity(BlockPos pPos, BlockState pBlockState) {
@@ -44,7 +42,6 @@ public class WeatherVaneBlockEntity extends BlockEntity implements GeoBlockEntit
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, WeatherVaneBlockEntity blockEntity) {
-        // Logika běží jen na serveru
         if (level.isClientSide()) return;
 
         ServerLevel serverLevel = (ServerLevel) level;
@@ -52,52 +49,40 @@ public class WeatherVaneBlockEntity extends BlockEntity implements GeoBlockEntit
 
         int currentDirection;
 
-        // 1. Zjistíme, jaký je aktuální směr
         if (!gameRules.getBoolean(ModGameRules.RULE_WINDENABLED)) {
-            currentDirection = 0; // Pokud je vítr vypnutý, cíl je 0 (Sever)
+            currentDirection = 0;
         } else {
             currentDirection = WindDirectionSavedData.get(serverLevel).getCurrentDirection();
         }
 
-        // 2. Porovnáme s posledním známým směrem
         if (currentDirection != blockEntity.lastKnownDirection) {
-            // ZMĚNA NASTALA!
-
             level.updateNeighbourForOutputSignal(pos, state.getBlock());
-
             boolean chaoticStorms = gameRules.getBoolean(ModGameRules.RULE_WINDDIRECTIONCHAOTICSTORMS);
 
-            // 3. Rozhodneme, jestli přehrát zvuk
             if (chaoticStorms && serverLevel.isThundering()) {
-                // Jsme v bouřce
+
                 if (blockEntity.stormCreakChangeCounter <= 0) {
-                    // Čas přehrát zvuk
                     playRandomCreakSound(serverLevel, pos);
-                    // Nastavit nový náhodný čítač (2-5 změn)
-                    blockEntity.stormCreakChangeCounter = serverLevel.random.nextInt(4) + 2; // 2, 3, 4, 5
+                    blockEntity.stormCreakChangeCounter = serverLevel.random.nextInt(4) + 2;
+
                 } else {
-                    // Ještě není čas, jen snížíme čítač
                     blockEntity.stormCreakChangeCounter--;
                 }
+
             } else {
-                // Nejsme v bouřce, přehrajeme zvuk vždy
                 playRandomCreakSound(serverLevel, pos);
             }
 
-            // 4. Uložíme si nový směr
             blockEntity.lastKnownDirection = currentDirection;
-            blockEntity.setChanged(); // Dáme vědět, že se BE změnilo (i když nic neukládáme)
+            blockEntity.setChanged();
         }
     }
 
     private static void playRandomCreakSound(Level level, BlockPos pos) {
-        if (ModSounds.VANE_CREAKS.isEmpty()) return; // Pojistka
+        if (ModSounds.VANE_CREAKS.isEmpty()) return;
 
-        // Vybereme náhodný zvuk z našeho seznamu
         SoundEvent sound = ModSounds.VANE_CREAKS.get(level.random.nextInt(ModSounds.VANE_CREAKS.size())).get();
-
-        // Přehrajeme ho na pozici bloku
-        level.playSound(null, pos, sound, SoundSource.BLOCKS, 0.7f, 1.0f); // Hlasitost 70%
+        level.playSound(null, pos, sound, SoundSource.BLOCKS, 0.7f, 1.0f);
     }
 
 }

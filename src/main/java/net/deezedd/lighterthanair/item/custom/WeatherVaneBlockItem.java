@@ -15,7 +15,6 @@ import java.util.function.Consumer;
 
 public class WeatherVaneBlockItem extends BlockItem implements GeoItem {
 
-    // Cache pro animace
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public WeatherVaneBlockItem(Block pBlock, Properties pProperties) {
@@ -39,11 +38,8 @@ public class WeatherVaneBlockItem extends BlockItem implements GeoItem {
         });
     }
 
-    // Zde řekneme GeckoLibu, které animace má použít
-    // Pro korouhev, která se v ruce nehýbe, to necháme prázdné
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-        // Žádné animace v ruce, takže nic
     }
 
     @Override

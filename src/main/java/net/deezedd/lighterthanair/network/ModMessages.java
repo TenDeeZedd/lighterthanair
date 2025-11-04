@@ -13,26 +13,14 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class ModMessages {
 
-    /**
-     * 2. Toto je "hlavní" registrační metoda, kterou voláš ze své LighterThanAir.java.
-     * Přijímá IEventBus.
-     */
     public static void register(IEventBus modEventBus) {
-        // Přihlásíme naši metodu 'registerPayloads' k naslouchání eventu
         modEventBus.addListener(ModMessages::registerPayloads);
     }
 
-    /**
-     * 3. Tato metoda se spustí, až když NeoForge spustí event RegisterPayloadHandlersEvent.
-     * Zde proběhne skutečná registrace packetu.
-     */
     private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        // Použijeme .registrar(MODID) místo .registrar()
         final PayloadRegistrar registrar = event.registrar(LighterThanAir.MODID)
                 .versioned("1.0");
 
-        // 4. Oprava chyb 'play' a 'client'
-        //    Použijeme .playToClient() a přímou referenci na metodu ::handle
         registrar.playToClient(
                 WindDirectionSyncS2CPacket.TYPE,
                 WindDirectionSyncS2CPacket.STREAM_CODEC,
@@ -40,11 +28,6 @@ public class ModMessages {
         );
     }
 
-    /**
-     * 5. Oprava chyby "Cannot resolve method 'send(Object)'"
-     * Metoda 'sendToPlayer' teď vyžaduje 'CustomPacketPayload'
-     * a používá 'PacketDistributor'.
-     */
     public static void sendToPlayer(CustomPacketPayload packet, ServerPlayer player) {
         PacketDistributor.sendToPlayer(player, packet);
     }

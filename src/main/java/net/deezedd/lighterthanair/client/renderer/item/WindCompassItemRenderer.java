@@ -32,21 +32,16 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
 
         float time = (float) animationState.getAnimationTick();
 
-        // Animace "wind1" a "wind2"
         if (wind1Bone != null)
             wind1Bone.setRotY(time * 0.003f);
         if (wind2Bone != null)
             wind2Bone.setRotY(time * -0.002f);
 
-        // Získáme aktuální kontext zobrazení (v ruce, v GUI, v item framu...)
+        // Display Context
         ItemDisplayContext displayContext = animationState.getData(DataTickets.ITEM_RENDER_PERSPECTIVE);
 
-        // Získáme směr větru (0-7)
         int windDirectionIndex = ClientWindData.getCurrentDirection();
 
-        // --- ROZDĚLENÍ LOGIKY PODLE KONTEXTU ---
-
-        // Konfigurace pro Item Frame a Zemi (Absolutní směr jako Blok, zrcadlený)
         if (displayContext == ItemDisplayContext.FIXED || displayContext == ItemDisplayContext.GROUND) {
 
             float blockWindYaw = switch (windDirectionIndex) {
@@ -61,17 +56,15 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
                 default -> 0.0f;
             };
 
-            // Vynutíme statickou základnu v Item Framu
             if (displayContext == ItemDisplayContext.FIXED && compassBaseBone != null) {
                 compassBaseBone.setRotY(0);
             }
 
-            // Ručička ukazuje absolutní směr (podle logiky bloku)
             if (arrowBone != null) {
                 arrowBone.setRotY((float) Math.toRadians(blockWindYaw));
             }
         }
-        // Konfigurace pro Ruku a GUI (Relativní směr k hráči)
+
         else if (displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND ||
                 displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND ||
                 displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND ||
@@ -101,7 +94,7 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
                 }
             }
         }
-        // Pojistka (např. null context) - absolutní směr
+
         else if (arrowBone != null) {
             float fallbackYaw = switch (windDirectionIndex) {
                 case 0 -> 0.0f;   // N... atd.
@@ -112,10 +105,8 @@ class WindCompassItemModel extends GeoModel<WindCompassBlockItem> {
     }
 }
 
-// Renderer
 public class WindCompassItemRenderer extends GeoItemRenderer<WindCompassBlockItem> {
     public WindCompassItemRenderer() {
         super(new WindCompassItemModel());
     }
-    // Nepotřebujeme přepisovat render
 }
