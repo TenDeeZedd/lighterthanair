@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_reinforced_fabric": {
+      "conditions": {
+        "items": [
+          {
+            "items": "dzlta:reinforced_fabric"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "minecraft:small_green_balloon_envelope_from_dyeing"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_reinforced_fabric"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "minecraft:small_green_balloon_envelope_from_dyeing"
+    ]
+  }
+}

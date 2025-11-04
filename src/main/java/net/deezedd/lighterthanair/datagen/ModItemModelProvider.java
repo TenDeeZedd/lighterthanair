@@ -5,10 +5,12 @@ import net.deezedd.lighterthanair.block.ModBlocks;
 import net.deezedd.lighterthanair.item.ModItems;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class ModItemModelProvider extends ItemModelProvider {
     public ModItemModelProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
@@ -25,17 +27,31 @@ public class ModItemModelProvider extends ItemModelProvider {
             withExistingParent(name, modLoc("block/small_" + color + "_balloon_crate"));
         }
 
-        simpleItem(ModItems.REINFORCED_FABRIC.getId());
+        simpleItem(ModItems.ITEMS.getEntries().stream()
+                .filter(item -> item.getId().getPath().equals("reinforced_fabric"))
+                .findFirst()
+                .orElseThrow());
 
         // 2. Všech 16 barevných plášťů
-        ModItems.SMALL_BALLOON_ENVELOPES.values()
-                .forEach(itemHolder -> simpleItem(itemHolder.getId()));
+        for (String color : ModBlocks.VANILLA_COLORS) {
+            String name = "small_" + color + "_balloon_envelope";
+
+            // Najdeme item a zaregistrujeme pro něj model
+            simpleItem(ModItems.ITEMS.getEntries().stream()
+                    .filter(item -> item.getId().getPath().equals(name))
+                    .findFirst()
+                    .orElseThrow());
+        }
         // ======================
     }
 
-    private void simpleItem(ResourceLocation item) {
-        withExistingParent(item.getPath(), "item/generated")
-                .texture("layer0", new ResourceLocation(item.getNamespace(), "item/" + item.getPath()));
+    private void simpleItem(DeferredHolder<Item, ? extends Item> item) {
+        withExistingParent(item.getId().getPath(), "item/generated")
+
+                // ===== OPRAVA CHYBY ZDE =====
+                // Místo 'new ResourceLocation(...)' použijeme 'ResourceLocation.fromNamespaceAndPath(...)'
+                .texture("layer0", ResourceLocation.fromNamespaceAndPath(item.getId().getNamespace(), "item/" + item.getId().getPath()));
+        // ============================
     }
 }
 

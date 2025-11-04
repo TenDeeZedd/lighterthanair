@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "dzlta:reinforced_fabric"
+    },
+    {
+      "item": "dzlta:reinforced_fabric"
+    },
+    {
+      "item": "dzlta:reinforced_fabric"
+    },
+    {
+      "item": "dzlta:reinforced_fabric"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "dzlta:small_brown_balloon_envelope"
+  }
+}

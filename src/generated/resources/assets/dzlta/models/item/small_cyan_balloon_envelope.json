@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "dzlta:item/small_cyan_balloon_envelope"
+  }
+}

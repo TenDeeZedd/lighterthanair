@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:orange_dye"
+    },
+    "E": {
+      "tag": "dzlta:small_balloon_envelopes"
+    }
+  },
+  "pattern": [
+    " D ",
+    "DED",
+    " D "
+  ],
+  "result": {
+    "count": 1,
+    "id": "dzlta:small_orange_balloon_envelope"
+  }
+}
