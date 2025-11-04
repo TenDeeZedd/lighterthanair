@@ -1,6 +1,7 @@
 package net.deezedd.lighterthanair.datagen;
 
 import net.deezedd.lighterthanair.LighterThanAir;
+import net.deezedd.lighterthanair.block.ModBlocks;
 import net.deezedd.lighterthanair.item.ModItems;
 import net.deezedd.lighterthanair.util.ModTags;
 import net.minecraft.core.HolderLookup;
@@ -11,6 +12,8 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.conditions.IConditionBuilder;
 
 import java.util.Map;
@@ -101,11 +104,13 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy("has_wool", has(ItemTags.WOOL))
                 .save(pRecipeOutput);
 
+        // Small Balloon Envelope (Brown)
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.SMALL_BALLOON_ENVELOPES.get("brown").get(), 1)
                 .requires(ModItems.REINFORCED_FABRIC.get(), 4)
                 .unlockedBy("has_reinforced_fabric", has(ModItems.REINFORCED_FABRIC.get()))
                 .save(pRecipeOutput, "small_brown_balloon_envelope_from_fabric");
 
+        // Small Balloon Envelope Coloring
         for (Map.Entry<String, Item> entry : COLOR_TO_DYE.entrySet()) {
             String color = entry.getKey();
             Item dye = entry.getValue();
@@ -119,6 +124,49 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                     .define('E', ModTags.Items.SMALL_BALLOON_ENVELOPES)
                     .unlockedBy("has_reinforced_fabric", has(ModItems.REINFORCED_FABRIC.get()))
                     .save(pRecipeOutput, "small_" + color + "_balloon_envelope_from_dyeing");
+        }
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, ModItems.SMALL_BALLOON_BASKET.get())
+                .pattern("S S")
+                .pattern("NBN")
+                .pattern("BBB")
+                .define('S', Items.STRING)
+                .define('B', Items.BAMBOO)
+                .define('N', Items.IRON_NUGGET)
+                .unlockedBy("has_bamboo", has(Items.BAMBOO))
+                .save(pRecipeOutput);
+
+
+        // Balloon Crates
+        for (String color : ModBlocks.VANILLA_COLORS) {
+            String envelopeName = "small_" + color + "_balloon_envelope";
+            String crateName = "small_" + color + "_balloon_crate";
+
+            // Search envelope
+            Item envelopeItem = ModItems.ITEMS.getEntries().stream()
+                    .filter(item -> item.getId().getPath().equals(envelopeName))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Missing item: " + envelopeName))
+                    .get();
+
+            // Search crate
+            Block crateBlock = ModBlocks.BLOCKS.getEntries().stream()
+                    .filter(block -> block.getId().getPath().equals(crateName))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Missing block: " + crateName))
+                    .get();
+
+            ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, crateBlock)
+                    .pattern("SES")
+                    .pattern("CBC")
+                    .pattern("SKS")
+                    .define('S', Items.STRING)
+                    .define('E', envelopeItem)
+                    .define('C', Items.CHAIN)
+                    .define('B', Items.BLAST_FURNACE)
+                    .define('K', ModItems.SMALL_BALLOON_BASKET.get()) // Nový item koše
+                    .unlockedBy("has_balloon_envelope", has(envelopeItem)) // Odemkne se, když hráč získá plášť
+                    .save(pRecipeOutput); // Uloží recept (např. "small_white_balloon_crate.json")
         }
 
     }

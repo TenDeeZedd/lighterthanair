@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:bamboo"
+    },
+    "N": {
+      "item": "minecraft:iron_nugget"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "S S",
+    "NBN",
+    "BBB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "dzlta:small_balloon_basket"
+  }
+}

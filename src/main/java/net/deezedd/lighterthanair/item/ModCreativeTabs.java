@@ -33,6 +33,8 @@ public class ModCreativeTabs {
                         ModItems.SMALL_BALLOON_ENVELOPES.values()
                                 .forEach(item -> output.accept(item.get()));
 
+                        output.accept(ModItems.SMALL_BALLOON_BASKET.get());
+
 
 
                     })

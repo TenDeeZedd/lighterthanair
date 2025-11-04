@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:blast_furnace"
+    },
+    "C": {
+      "item": "minecraft:chain"
+    },
+    "E": {
+      "item": "dzlta:small_purple_balloon_envelope"
+    },
+    "K": {
+      "item": "dzlta:small_balloon_basket"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "SES",
+    "CBC",
+    "SKS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "dzlta:small_purple_balloon_crate"
+  }
+}
