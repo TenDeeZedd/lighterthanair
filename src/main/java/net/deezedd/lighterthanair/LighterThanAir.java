@@ -4,6 +4,7 @@ import net.deezedd.lighterthanair.block.ModBlocks;
 import net.deezedd.lighterthanair.blockentity.ModBlockEntities;
 import net.deezedd.lighterthanair.client.ClientSetup;
 import net.deezedd.lighterthanair.datagen.DataGenerators;
+import net.deezedd.lighterthanair.entity.ModEntities;
 import net.deezedd.lighterthanair.item.ModCreativeTabs;
 import net.deezedd.lighterthanair.item.ModItems;
 import net.deezedd.lighterthanair.network.ModMessages;
@@ -44,6 +45,7 @@ public class LighterThanAir {
 
         ModBlocks.registerBalloonCrates();
         ModItems.registerBalloonEnvelopes();
+        ModEntities.register(modEventBus);
 
         ModCreativeTabs.register(modEventBus);
         ModBlockEntities.register(modEventBus);

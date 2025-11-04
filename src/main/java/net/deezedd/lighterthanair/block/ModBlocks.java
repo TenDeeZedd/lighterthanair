@@ -44,12 +44,16 @@ public class ModBlocks {
         for (String color : VANILLA_COLORS) {
             String name = "small_" + color + "_balloon_crate";
 
+            // Zaregistrujeme blok
             DeferredBlock<Block> crateBlock = registerBlock(name,
+                    // ===== UPRAVENO: Předáváme "color" do konstruktoru =====
                     () -> new BalloonCrateBlock(BlockBehaviour.Properties.of()
-                            .mapColor(MapColor.WOOD) // Barva na mapě
-                            .strength(2.5f)      // Stejná pevnost jako bedna
-                            .sound(SoundType.WOOD))); // Zvuk dřeva
+                            .mapColor(MapColor.WOOD)
+                            .strength(2.5f)
+                            .sound(SoundType.WOOD),
+                            color)); // <-- Zde předáváme barvu
 
+            // Zaregistrujeme odpovídající item
             registerBlockItem(name, crateBlock);
         }
     }
