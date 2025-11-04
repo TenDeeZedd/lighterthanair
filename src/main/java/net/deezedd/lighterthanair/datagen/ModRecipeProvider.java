@@ -127,10 +127,9 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
         }
 
         ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, ModItems.SMALL_BALLOON_BASKET.get())
-                .pattern("S S")
-                .pattern("NBN")
+                .pattern("N N")
                 .pattern("BBB")
-                .define('S', Items.STRING)
+                .pattern("BBB")
                 .define('B', Items.BAMBOO)
                 .define('N', Items.IRON_NUGGET)
                 .unlockedBy("has_bamboo", has(Items.BAMBOO))
